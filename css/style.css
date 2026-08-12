@@ -1,11 +1,18 @@
+/*
+  Paleta baseada em pigmentos identificados nos portais de Tiwanaku/Puma Punku:
+  vermelho, branco, preto e amarelo ocre (Max Portugal Ortiz, 1977-1988).
+*/
 :root {
-  --navy: #1b2a4a;
-  --navy-dark: #101a30;
-  --gold: #b08d57;
-  --bg: #ffffff;
-  --bg-alt: #f5f6f8;
-  --text: #22262f;
-  --text-light: #5b6270;
+  --ink: #221b14;         /* pigmento preto */
+  --stone: #6f6355;       /* pedra andesito intemperizada */
+  --stone-dark: #3a3226;  /* pedra em sombra */
+  --ochre-red: #a8412a;   /* pigmento vermelho ocre */
+  --ochre-yellow: #c9982e;/* pigmento amarelo ocre */
+  --bone: #f3e9d4;        /* pigmento branco / cal */
+  --bg: #fbf6ea;
+  --bg-alt: #efe3c8;
+  --text: #2b241a;
+  --text-light: #6b5f4d;
   --whatsapp: #25d366;
 }
 
@@ -27,72 +34,115 @@ body {
 
 a { color: inherit; }
 
+/* Ícones e motivos (Chakana / cruz andina escalonada) */
+.chakana-red, .motif-red { fill: var(--ochre-red); }
+.chakana-yellow, .motif-yellow { fill: var(--ochre-yellow); }
+.chakana-bone, .motif-bone { fill: var(--bone); }
+
+.logo-icon {
+  width: 28px;
+  height: 28px;
+  vertical-align: middle;
+  margin-right: 8px;
+}
+
+.heading-mark {
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  background: var(--ochre-red);
+  margin-right: 10px;
+  transform: rotate(45deg);
+  vertical-align: middle;
+}
+
 /* Header */
 .site-header {
-  background: var(--navy);
-  color: #fff;
+  background: var(--ink);
+  color: var(--bone);
   position: sticky;
   top: 0;
   z-index: 10;
+  border-bottom: 3px solid var(--ochre-yellow);
 }
 
 .header-inner {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 18px 24px;
+  padding: 16px 24px;
 }
 
 .logo {
+  display: flex;
+  align-items: center;
   font-size: 1.4rem;
   font-weight: bold;
   text-decoration: none;
-  color: #fff;
+  color: var(--bone);
 }
 
-.logo span { color: var(--gold); }
+.logo span { color: var(--ochre-yellow); }
 
 nav a {
-  color: #fff;
+  color: var(--bone);
   text-decoration: none;
   margin-left: 28px;
   font-size: 0.95rem;
 }
 
-nav a:hover { color: var(--gold); }
+nav a:hover { color: var(--ochre-yellow); }
 
 .menu-toggle {
   display: none;
   background: none;
   border: none;
-  color: #fff;
+  color: var(--bone);
   font-size: 1.5rem;
   cursor: pointer;
 }
 
 /* Hero */
 .hero {
-  background: linear-gradient(180deg, var(--navy) 0%, var(--navy-dark) 100%);
-  color: #fff;
+  position: relative;
+  overflow: hidden;
+  background: linear-gradient(180deg, var(--stone) 0%, var(--stone-dark) 100%);
+  color: var(--bone);
   text-align: center;
-  padding: 100px 24px;
+  padding: 110px 24px;
+}
+
+.hero-motif {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 640px;
+  height: 640px;
+  transform: translate(-50%, -50%);
+  opacity: 0.14;
+}
+
+.hero-content {
+  position: relative;
+  z-index: 1;
 }
 
 .hero h1 {
   font-size: 2.6rem;
   margin-bottom: 12px;
+  letter-spacing: 0.5px;
 }
 
 .hero p {
   font-size: 1.15rem;
-  color: #cdd3e0;
+  color: var(--bg-alt);
   margin-bottom: 32px;
 }
 
 .btn {
   display: inline-block;
   padding: 14px 30px;
-  border-radius: 4px;
+  border-radius: 3px;
   text-decoration: none;
   font-weight: bold;
 }
@@ -107,6 +157,20 @@ nav a:hover { color: var(--gold); }
 
 .btn-whatsapp:hover { opacity: 0.9; }
 
+/* Divisor escalonado (inspirado nos encaixes dos blocos de Puma Punku) */
+.step-divider {
+  line-height: 0;
+}
+
+.step-divider svg {
+  width: 100%;
+  height: 12px;
+  display: block;
+}
+
+.step-fill { fill: var(--ochre-red); }
+.step-bg { fill: var(--ink); }
+
 /* Sections */
 .section {
   padding: 70px 24px;
@@ -119,7 +183,9 @@ nav a:hover { color: var(--gold); }
 .section h2 {
   font-size: 1.8rem;
   margin-bottom: 20px;
-  color: var(--navy);
+  color: var(--ink);
+  display: flex;
+  align-items: center;
 }
 
 .cards {
@@ -130,14 +196,21 @@ nav a:hover { color: var(--gold); }
 }
 
 .card {
-  background: #fff;
-  border: 1px solid #e2e4e9;
-  border-radius: 6px;
+  background: var(--bone);
+  border: 1px solid var(--stone);
+  border-top: 4px solid var(--ochre-red);
+  border-radius: 4px;
   padding: 28px;
 }
 
+.card-icon {
+  width: 32px;
+  height: 32px;
+  margin-bottom: 12px;
+}
+
 .card h3 {
-  color: var(--navy);
+  color: var(--ochre-red);
   margin-top: 0;
 }
 
@@ -154,15 +227,24 @@ nav a:hover { color: var(--gold); }
   margin-bottom: 6px;
   font-weight: bold;
   font-size: 0.9rem;
+  color: var(--ink);
 }
 
 .contact-form input,
 .contact-form textarea {
   padding: 10px 12px;
-  border: 1px solid #ccced4;
-  border-radius: 4px;
+  border: 1px solid var(--stone);
+  border-radius: 3px;
   font-family: inherit;
   font-size: 1rem;
+  background: var(--bone);
+  color: var(--text);
+}
+
+.contact-form input:focus,
+.contact-form textarea:focus {
+  outline: none;
+  border-color: var(--ochre-yellow);
 }
 
 .contact-form button {
@@ -178,16 +260,31 @@ nav a:hover { color: var(--gold); }
 
 .contact-info a {
   text-decoration: none;
-  color: var(--navy);
+  color: var(--ochre-red);
+  font-weight: bold;
 }
 
 /* Footer */
 .site-footer {
-  background: var(--navy-dark);
-  color: #cdd3e0;
+  background: var(--ink);
+  color: var(--bg-alt);
   text-align: center;
-  padding: 24px;
+  padding: 0 0 24px;
   font-size: 0.85rem;
+}
+
+.footer-band {
+  width: 100%;
+  height: 10px;
+  display: block;
+}
+
+.band-red { fill: var(--ochre-red); }
+.band-yellow { fill: var(--ochre-yellow); }
+.band-bone { fill: var(--bone); opacity: 0; }
+
+.site-footer .container {
+  padding-top: 20px;
 }
 
 /* Responsive */
@@ -197,7 +294,7 @@ nav a:hover { color: var(--gold); }
   nav {
     display: none;
     flex-direction: column;
-    background: var(--navy);
+    background: var(--ink);
     padding: 12px 24px 20px;
     position: absolute;
     top: 64px;
@@ -217,4 +314,5 @@ nav a:hover { color: var(--gold); }
 
   .hero { padding: 70px 20px; }
   .hero h1 { font-size: 2rem; }
+  .hero-motif { width: 420px; height: 420px; }
 }
