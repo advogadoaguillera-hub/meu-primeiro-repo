@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Aguillera Advocacia</title>
+<meta name="description" content="Aguillera Advocacia — atuação nas áreas Cível e Família.">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <pattern id="stepPattern" width="20" height="12" patternUnits="userSpaceOnUse">
+      <rect width="20" height="12" class="step-bg"/>
+      <path d="M0,12 L0,6 L6,6 L6,0 L14,0 L14,6 L20,6 L20,12 Z" class="step-fill"/>
+    </pattern>
+  </defs>
+</svg>
+
+<header class="site-header">
+  <div class="container header-inner">
+    <a href="#" class="logo">
+      <svg class="logo-icon" viewBox="0 0 40 40" aria-hidden="true">
+        <path d="M20 2 L26 10 L20 18 L14 10 Z" class="chakana-red"/>
+        <path d="M2 20 L10 14 L18 20 L10 26 Z" class="chakana-yellow"/>
+        <path d="M38 20 L30 14 L22 20 L30 26 Z" class="chakana-yellow"/>
+        <path d="M20 22 L26 30 L20 38 L14 30 Z" class="chakana-red"/>
+        <rect x="16" y="16" width="8" height="8" class="chakana-bone"/>
+      </svg>
+      Aguillera <span>Advocacia</span>
+    </a>
+    <button class="menu-toggle" id="menuToggle" aria-label="Abrir menu">☰</button>
+    <nav id="mainNav">
+      <a href="#sobre">Sobre</a>
+      <a href="#areas">Áreas de Atuação</a>
+      <a href="#contato">Contato</a>
+    </nav>
+  </div>
+</header>
+
+<section class="hero">
+  <svg class="hero-motif" viewBox="0 0 400 400" aria-hidden="true" preserveAspectRatio="xMidYMid slice">
+    <path d="M200 40 L240 100 L200 160 L160 100 Z" class="motif-red"/>
+    <path d="M40 200 L100 160 L160 200 L100 240 Z" class="motif-yellow"/>
+    <path d="M360 200 L300 160 L240 200 L300 240 Z" class="motif-yellow"/>
+    <path d="M200 240 L240 300 L200 360 L160 300 Z" class="motif-red"/>
+    <rect x="170" y="170" width="60" height="60" class="motif-bone"/>
+  </svg>
+  <div class="container hero-content">
+    <h1>Aguillera Advocacia</h1>
+    <p>Atendimento jurídico atencioso nas áreas Cível e Família.</p>
+    <a class="btn btn-whatsapp" href="https://wa.me/5567998325997" target="_blank" rel="noopener">Falar pelo WhatsApp</a>
+  </div>
+</section>
+
+<div class="step-divider" aria-hidden="true">
+  <svg viewBox="0 0 400 12" preserveAspectRatio="none">
+    <rect width="400" height="12" fill="url(#stepPattern)"/>
+  </svg>
+</div>
+
+<section id="sobre" class="section">
+  <div class="container">
+    <h2><span class="heading-mark"></span>Sobre</h2>
+    <p>O Aguillera Advocacia oferece orientação e representação jurídica com atenção próxima a cada caso, buscando soluções claras e adequadas à situação de cada cliente.</p>
+  </div>
+</section>
+
+<section id="areas" class="section section-alt">
+  <div class="container">
+    <h2><span class="heading-mark"></span>Áreas de Atuação</h2>
+    <div class="cards">
+      <div class="card">
+        <svg class="card-icon" viewBox="0 0 40 40" aria-hidden="true">
+          <path d="M20 4 L26 12 L20 20 L14 12 Z" class="motif-red"/>
+          <path d="M20 20 L26 28 L20 36 L14 28 Z" class="motif-yellow"/>
+        </svg>
+        <h3>Direito Cível</h3>
+        <p>Contratos, cobranças, indenizações e demais questões cíveis.</p>
+      </div>
+      <div class="card">
+        <svg class="card-icon" viewBox="0 0 40 40" aria-hidden="true">
+          <path d="M20 4 L26 12 L20 20 L14 12 Z" class="motif-yellow"/>
+          <path d="M20 20 L26 28 L20 36 L14 28 Z" class="motif-red"/>
+        </svg>
+        <h3>Direito de Família</h3>
+        <p>Divórcio, pensão alimentícia, guarda de filhos e inventário.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="step-divider" aria-hidden="true">
+  <svg viewBox="0 0 400 12" preserveAspectRatio="none">
+    <rect width="400" height="12" fill="url(#stepPattern)"/>
+  </svg>
+</div>
+
+<section id="contato" class="section">
+  <div class="container">
+    <h2><span class="heading-mark"></span>Contato</h2>
+    <p>Preencha o formulário abaixo ou fale diretamente pelo WhatsApp.</p>
+
+    <form id="contactForm" class="contact-form">
+      <label for="nome">Nome</label>
+      <input type="text" id="nome" name="nome" required>
+
+      <label for="telefone">Telefone</label>
+      <input type="tel" id="telefone" name="telefone" required>
+
+      <label for="mensagem">Mensagem</label>
+      <textarea id="mensagem" name="mensagem" rows="5" required></textarea>
+
+      <button type="submit" class="btn btn-whatsapp">Enviar pelo WhatsApp</button>
+    </form>
+
+    <div class="contact-info">
+      <p><strong>WhatsApp:</strong> <a href="https://wa.me/5567998325997" target="_blank" rel="noopener">(67) 99832-5997</a></p>
+      <p><strong>E-mail:</strong> <a href="mailto:advogadoaguillera@gmail.com">advogadoaguillera@gmail.com</a></p>
+    </div>
+  </div>
+</section>
+
+<footer class="site-footer">
+  <svg class="footer-band" viewBox="0 0 400 10" preserveAspectRatio="none" aria-hidden="true">
+    <rect x="0" y="0" width="400" height="10" class="band-bone"/>
+    <rect x="0" y="0" width="50" height="10" class="band-red"/>
+    <rect x="50" y="0" width="50" height="10" class="band-yellow"/>
+    <rect x="100" y="0" width="50" height="10" class="band-red"/>
+    <rect x="150" y="0" width="50" height="10" class="band-yellow"/>
+    <rect x="200" y="0" width="50" height="10" class="band-red"/>
+    <rect x="250" y="0" width="50" height="10" class="band-yellow"/>
+    <rect x="300" y="0" width="50" height="10" class="band-red"/>
+    <rect x="350" y="0" width="50" height="10" class="band-yellow"/>
+  </svg>
+  <div class="container">
+    <p>&copy; <span id="year"></span> Aguillera Advocacia</p>
+  </div>
+</footer>
+
+<script src="js/script.js"></script>
+</body>
+</html>
