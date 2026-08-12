@@ -1,10 +1,10 @@
 # Meu Primeiro Repositório
 
-Este é um repositório de pratica para aprender o fluxo de contribuição no GitHub: criar uma branch, fazer uma alteração e abrir um Pull Request.
+Este é um repositório de prática para aprender o fluxo de contribuição no GitHub: criar uma branch, fazer uma alteração e abrir um Pull Request.
 
 ## Sobre
 
-Este projeto foi criado como um espaço de aprendizado. Sinta-se a vontade para explorar.
+Este projeto foi criado como um espaço de aprendizado. Sinta-se à vontade para explorar.
 
 ## Como contribuir
 
