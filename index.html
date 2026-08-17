@@ -1,0 +1,944 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<title>Advocacia da Terra | Jocsan Aguillera — Direito Imobiliário e Fundiário em Corumbá/MS</title>
+<meta name="description" content="Advocacia especializada em imóveis rurais, regularização fundiária, auditoria dominial e patrimônio imobiliário em Corumbá, Pantanal e Mato Grosso do Sul.">
+<meta name="author" content="Jocsan Aguillera">
+<meta name="robots" content="index, follow">
+<meta name="theme-color" content="#0B3D2E">
+
+<!-- Open Graph -->
+<meta property="og:type" content="website">
+<meta property="og:locale" content="pt_BR">
+<meta property="og:site_name" content="Advocacia da Terra — Jocsan Aguillera">
+<meta property="og:title" content="Advocacia da Terra | Direito Imobiliário e Fundiário em Corumbá/MS">
+<meta property="og:description" content="Análise, prevenção, regularização e defesa jurídica para proprietários de imóveis rurais e patrimônio imobiliário no Pantanal.">
+<meta property="og:image" content="assets/img/og-capa.png">
+<meta name="twitter:card" content="summary_large_image">
+
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="assets/logo/apple-touch-icon.png">
+<link rel="manifest" href="site.webmanifest">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<a class="pular-para-conteudo" href="#conteudo-principal">Ir para o conteúdo</a>
+
+<!-- ====================================================================
+     1. HEADER
+     ==================================================================== -->
+<header class="cabecalho" id="cabecalho">
+  <div class="container cabecalho__interno">
+
+    <!-- LOGO
+         Marca reconstruída em texto + monograma vetorial para carregar
+         instantaneamente sobre o fundo verde.
+         >>> Para usar o arquivo oficial em versão CLARA, salve-o como
+         assets/logo/logo-claro.svg e troque o bloco <a> abaixo por:
+         <a class="marca" href="#topo">
+           <img src="assets/logo/logo-claro.svg" alt="Jocsan Aguillera — Advocacia da Terra" width="210" height="48">
+         </a>
+    -->
+    <a class="marca" href="#topo" aria-label="Jocsan Aguillera — Advocacia da Terra, ir para o início">
+      <svg class="marca__monograma" viewBox="0 0 60 52" aria-hidden="true" focusable="false">
+        <defs>
+          <linearGradient id="ouro" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%"   stop-color="#E7D08A"/>
+            <stop offset="45%"  stop-color="#C8A84E"/>
+            <stop offset="100%" stop-color="#9C7C2E"/>
+          </linearGradient>
+        </defs>
+        <!-- Monograma J A -->
+        <path d="M23.5 6 h8.5 v27.5 c0 7.2-4.1 11.6-11 11.6-4.6 0-8.2-1.9-10.4-5.2l5.2-4.6c1.2 1.9 2.9 3 5 3 2.4 0 3.7-1.5 3.7-4.6z" fill="url(#ouro)"/>
+        <path d="M38.5 6 h7.6 L59 45.6 h-8.4 l-2.3-7.7 H37.9 l-2.3 7.7 h-8.3z M40 31.2 h6.4 L43.2 19.4z" fill="url(#ouro)"/>
+      </svg>
+      <span class="marca__texto">
+        <span class="marca__nome">Jocsan Aguillera</span>
+        <span class="marca__descritor">Advocacia da Terra</span>
+      </span>
+    </a>
+
+    <button class="menu-botao" id="menuBotao" aria-label="Abrir menu de navegação" aria-expanded="false" aria-controls="navPrincipal">
+      <span class="menu-botao__barra"></span>
+      <span class="menu-botao__barra"></span>
+      <span class="menu-botao__barra"></span>
+    </button>
+
+    <nav class="nav" id="navPrincipal" aria-label="Navegação principal">
+      <a href="#auditoria">Auditoria Dominial</a>
+      <a href="#solucoes">Soluções</a>
+      <a href="#territorio">Corumbá</a>
+      <a href="#conteudo">Conteúdo</a>
+      <a href="#sobre">Sobre</a>
+      <a class="nav__cta" href="#contato">Falar sobre uma propriedade</a>
+    </nav>
+  </div>
+</header>
+
+<main id="conteudo-principal">
+
+<!-- ====================================================================
+     2. HERO
+     ==================================================================== -->
+<section class="hero" id="topo">
+
+  <!-- CENÁRIO DO PANTANAL
+       Ilustração vetorial original — leve (poucos KB), nítida em qualquer tela
+       e sem custo de licenciamento.
+       >>> Para usar uma FOTOGRAFIA no lugar, adicione o arquivo em
+       assets/img/hero-pantanal.webp e descomente a linha .hero--foto no CSS.
+  -->
+  <svg class="hero__cenario" viewBox="0 0 1600 900" preserveAspectRatio="xMidYMid slice" aria-hidden="true" focusable="false">
+    <defs>
+      <linearGradient id="ceu" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%"   stop-color="#06281F"/>
+        <stop offset="42%"  stop-color="#0B3D2E"/>
+        <stop offset="72%"  stop-color="#2E5A42"/>
+        <stop offset="88%"  stop-color="#8E8449"/>
+        <stop offset="100%" stop-color="#C8A84E"/>
+      </linearGradient>
+      <linearGradient id="agua" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%"   stop-color="#B8993F"/>
+        <stop offset="30%"  stop-color="#3D5B3E"/>
+        <stop offset="100%" stop-color="#08301F"/>
+      </linearGradient>
+      <linearGradient id="bruma" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%" stop-color="#C8A84E" stop-opacity="0"/>
+        <stop offset="100%" stop-color="#C8A84E" stop-opacity=".22"/>
+      </linearGradient>
+    </defs>
+
+    <!-- Céu -->
+    <rect width="1600" height="620" fill="url(#ceu)"/>
+    <!-- Sol baixo no horizonte -->
+    <circle cx="1120" cy="600" r="58" fill="#E7D08A" opacity=".55"/>
+    <!-- Bruma sobre o horizonte -->
+    <rect y="470" width="1600" height="150" fill="url(#bruma)"/>
+
+    <!-- Linha de mata distante -->
+    <path d="M0 604 q90-22 150-6 t130 2 q70-26 140-8 t120 6 q80-30 160-10 t150 8 q90-24 160-4 t180 2 q60-14 110-4 v42 H0z" fill="#0A3526" opacity=".9"/>
+
+    <!-- Espelho d'água -->
+    <rect y="620" width="1600" height="130" fill="url(#agua)"/>
+    <!-- Reflexos -->
+    <g fill="#E7D08A" opacity=".28">
+      <rect x="1060" y="646" width="120" height="3" rx="1.5"/>
+      <rect x="1085" y="664" width="72"  height="3" rx="1.5"/>
+      <rect x="1045" y="682" width="150" height="2" rx="1"/>
+      <rect x="1095" y="700" width="54"  height="2" rx="1"/>
+    </g>
+
+    <!-- Margem / campo em primeiro plano -->
+    <path d="M0 742 q200-26 400-14 t400 10 q200-20 400-8 t400 16 V900 H0z" fill="#06281F"/>
+
+    <!-- Silhuetas de gado na margem -->
+    <g fill="#04201A" opacity=".85">
+      <path d="M300 738 h30 v-9 h-4 v-7 h-5 v7 h-12 v-7 h-5 v7 h-4z"/>
+      <path d="M352 740 h26 v-8 h-3 v-6 h-4 v6 h-10 v-6 h-5 v6 h-4z"/>
+      <path d="M980 736 h34 v-10 h-5 v-8 h-5 v8 h-14 v-8 h-5 v8 h-5z"/>
+    </g>
+
+    <!-- Cerca de arame em primeiro plano -->
+    <g stroke="#04201A" stroke-width="4" opacity=".92">
+      <line x1="0" y1="812" x2="1600" y2="792"/>
+      <line x1="0" y1="846" x2="1600" y2="826"/>
+    </g>
+    <g fill="#04201A" opacity=".95">
+      <rect x="120"  y="762" width="9" height="106"/>
+      <rect x="470"  y="758" width="9" height="106"/>
+      <rect x="830"  y="752" width="9" height="106"/>
+      <rect x="1190" y="746" width="9" height="106"/>
+      <rect x="1520" y="740" width="9" height="106"/>
+    </g>
+  </svg>
+
+  <div class="container hero__conteudo">
+    <p class="hero__sobretitulo">Corumbá — Mato Grosso do Sul · Pantanal</p>
+    <h1 class="hero__titulo">
+      A terra tem valor.<br>
+      <em>O título precisa acompanhar.</em>
+    </h1>
+    <p class="hero__subtitulo">
+      Advocacia especializada em imóveis rurais, patrimônio imobiliário e
+      regularização fundiária em Corumbá e no Pantanal.
+    </p>
+    <p class="hero__apoio">
+      Análise, prevenção, regularização e defesa jurídica para proprietários que
+      precisam transformar terra em patrimônio juridicamente seguro.
+    </p>
+    <div class="hero__acoes">
+      <a class="botao botao--ouro" href="#contato">Solicitar análise da propriedade</a>
+      <a class="botao botao--contorno" href="#solucoes">Conhecer as soluções</a>
+    </div>
+  </div>
+
+  <div class="hero__rodape" aria-hidden="true">
+    <span class="hero__nota">A terra permanece. O direito precisa acompanhá-la.</span>
+  </div>
+</section>
+
+<!-- ====================================================================
+     3. O PROBLEMA
+     ==================================================================== -->
+<section class="secao secao--claro" id="problema">
+  <div class="container">
+    <div class="secao__cabecalho secao__cabecalho--centro">
+      <span class="etiqueta">O ponto de partida</span>
+      <h2 class="titulo-secao">Uma matrícula não conta toda a história.</h2>
+    </div>
+
+    <p class="texto-destaque">
+      Um imóvel pode parecer regular e ainda assim exigir investigação sobre a
+      sua origem, a cadeia dominial, os registros anteriores, a área efetiva,
+      a documentação, a situação fundiária, eventuais questões ambientais e as
+      restrições territoriais que incidem sobre ele.
+    </p>
+
+    <blockquote class="citacao">
+      O problema de uma propriedade raramente aparece quando tudo está tranquilo.
+      Ele costuma aparecer quando alguém precisa vender, financiar, transmitir ou
+      defender aquele patrimônio.
+    </blockquote>
+
+    <div class="momentos">
+      <article class="momento">
+        <span class="momento__numero">01</span>
+        <h3 class="momento__titulo">Venda</h3>
+        <p>O comprador começa a investigar.</p>
+      </article>
+      <article class="momento">
+        <span class="momento__numero">02</span>
+        <h3 class="momento__titulo">Financiamento</h3>
+        <p>O banco começa a investigar.</p>
+      </article>
+      <article class="momento">
+        <span class="momento__numero">03</span>
+        <h3 class="momento__titulo">Fiscalização / Litígio</h3>
+        <p>O Estado começa a investigar.</p>
+      </article>
+    </div>
+
+    <p class="fecho-secao">O trabalho preventivo é descobrir antes.</p>
+  </div>
+</section>
+
+<!-- ====================================================================
+     4. AUDITORIA DOMINIAL DE FRONTEIRA  (produto-âncora)
+     ==================================================================== -->
+<section class="secao secao--verde auditoria" id="auditoria">
+  <div class="container">
+    <div class="secao__cabecalho">
+      <span class="etiqueta etiqueta--ouro">Produto-âncora</span>
+      <h2 class="titulo-secao titulo-secao--claro">Auditoria Dominial de Fronteira</h2>
+      <p class="subtitulo-secao">
+        Antes de comprar, vender, financiar ou transmitir uma fazenda,
+        descubra o que existe por trás da matrícula.
+      </p>
+    </div>
+
+    <div class="auditoria__corpo">
+      <div class="auditoria__texto">
+        <p>
+          A Auditoria Dominial de Fronteira é um trabalho documental estruturado,
+          conduzido para <strong>identificar riscos</strong>, <strong>mapear
+          vulnerabilidades</strong> e <strong>avaliar a cadeia documental</strong>
+          de um imóvel — de modo a <strong>antecipar problemas</strong> e
+          <strong>subsidiar decisões patrimoniais</strong> antes que elas sejam
+          tomadas.
+        </p>
+        <p>
+          Conforme o caso e a documentação disponível, a análise pode alcançar
+          os seguintes pontos:
+        </p>
+        <p class="auditoria__microcopy">
+          A propriedade tem uma história. Nós investigamos essa história.
+        </p>
+      </div>
+
+      <ul class="lista-verificacao">
+        <li>Cadeia dominial e origem do título</li>
+        <li>Situação perante o INCRA</li>
+        <li>Situação perante a SPU</li>
+        <li>Regime jurídico da faixa de fronteira</li>
+        <li>Georreferenciamento e SIGEF</li>
+        <li>Cadastro Ambiental Rural (CAR)</li>
+        <li>Eventuais embargos ambientais</li>
+        <li>Sobreposição territorial</li>
+        <li>Questões relacionadas a assentamentos</li>
+        <li>Questões territoriais indígenas</li>
+        <li>Passivo relacionado ao ITR</li>
+        <li>Riscos registrais e dominiais</li>
+      </ul>
+    </div>
+
+    <div class="auditoria__acao">
+      <a class="botao botao--ouro" href="#contato">Solicitar uma análise da propriedade</a>
+    </div>
+  </div>
+</section>
+
+<!-- ====================================================================
+     5. AS CINCO SOLUÇÕES
+     ==================================================================== -->
+<section class="secao secao--claro" id="solucoes">
+  <div class="container">
+    <div class="secao__cabecalho secao__cabecalho--centro">
+      <span class="etiqueta">Atuação</span>
+      <h2 class="titulo-secao">Soluções para o patrimônio imobiliário</h2>
+    </div>
+
+    <div class="solucoes">
+
+      <article class="solucao">
+        <span class="solucao__numero">01</span>
+        <h3 class="solucao__titulo">Auditoria Dominial de Fronteira</h3>
+        <p class="solucao__chamada">
+          Descubra os riscos jurídicos que podem estar escondidos na história do imóvel.
+        </p>
+        <p class="solucao__descricao">
+          Análise que pode abranger cadeia dominial, INCRA, SPU, faixa de fronteira,
+          SIGEF, CAR, questões ambientais e sobreposições territoriais.
+        </p>
+        <a class="solucao__link" href="#auditoria">Conhecer a auditoria</a>
+      </article>
+
+      <article class="solucao">
+        <span class="solucao__numero">02</span>
+        <h3 class="solucao__titulo">Defesa Patrimonial Ambiental e Fundiária</h3>
+        <p class="solucao__chamada">
+          Quando o patrimônio está sob ameaça, a resposta precisa ser estratégica.
+        </p>
+        <p class="solucao__descricao">
+          Atuação para proprietários atingidos por bloqueio de bens, embargo de área,
+          sequestro de imóvel, ações civis públicas, cobranças relacionadas a dano
+          ambiental e conflitos fundiários.
+        </p>
+        <a class="solucao__link" href="#contato">Falar sobre o caso</a>
+      </article>
+
+      <article class="solucao">
+        <span class="solucao__numero">03</span>
+        <h3 class="solucao__titulo">Regularização, Retificação e Georreferenciamento</h3>
+        <p class="solucao__chamada">
+          Da situação de fato à situação juridicamente organizada.
+        </p>
+        <p class="solucao__descricao">
+          Georreferenciamento, retificação de área, ratificação de títulos em faixa
+          de fronteira, usucapião extrajudicial, adjudicação compulsória
+          extrajudicial, regularização perante INCRA e SPU e depuração documental.
+        </p>
+        <p class="solucao__nota">
+          Georreferenciamento, documentação e cadeia dominial costumam estar
+          entrelaçados: a medição pode revelar divergência de área, a divergência
+          pode revelar um problema de registro, e o registro pode remeter a um
+          vício na origem do título. Por isso esses pontos costumam precisar de
+          análise conjunta, e não isolada.
+        </p>
+        <a class="solucao__link" href="#contato">Avaliar a regularização</a>
+      </article>
+
+      <article class="solucao">
+        <span class="solucao__numero">04</span>
+        <h3 class="solucao__titulo">Sucessão e Estruturação Patrimonial Rural</h3>
+        <p class="solucao__chamada">
+          Uma fazenda pode atravessar gerações. O planejamento também precisa.
+        </p>
+        <p class="solucao__descricao">
+          Holding rural, planejamento sucessório, inventário extrajudicial, doação
+          com reserva de usufruto, pacto antenupcial, estruturação patrimonial e
+          análise jurídica das operações envolvendo imóveis rurais.
+        </p>
+        <a class="solucao__link" href="#sucessao">Planejar a sucessão</a>
+      </article>
+
+      <article class="solucao">
+        <span class="solucao__numero">05</span>
+        <h3 class="solucao__titulo">Regularização e Proteção de Imóveis Urbanos</h3>
+        <p class="solucao__chamada">
+          Regularizar um imóvel é transformar uma situação vulnerável em
+          patrimônio juridicamente organizado.
+        </p>
+        <p class="solucao__descricao">
+          Defesa possessória, REURB, regularização de loteamentos, depuração de
+          cadeia registral, usucapião, defesa contra problemas registrais e
+          questões envolvendo posse e propriedade urbana.
+        </p>
+        <a class="solucao__link" href="#contato">Tratar do imóvel urbano</a>
+      </article>
+
+    </div>
+  </div>
+</section>
+
+<!-- ====================================================================
+     6. POR QUE CORUMBÁ
+     ==================================================================== -->
+<section class="secao secao--escuro territorio" id="territorio">
+  <div class="container">
+    <div class="secao__cabecalho secao__cabecalho--centro">
+      <span class="etiqueta etiqueta--ouro">O território</span>
+      <h2 class="titulo-secao titulo-secao--claro">A terra aqui não é um detalhe. É o ativo.</h2>
+      <p class="subtitulo-secao">
+        A dimensão territorial de Corumbá explica por que a especialização em
+        direito da terra faz sentido nesta região.
+      </p>
+    </div>
+
+    <dl class="numeros">
+      <div class="numero">
+        <dt class="numero__valor">64.431 <span>km²</span></dt>
+        <dd class="numero__rotulo">Área territorial de Corumbá</dd>
+      </div>
+      <div class="numero">
+        <dt class="numero__valor">2,2 <span>milhões</span></dt>
+        <dd class="numero__rotulo">Cabeças de gado em 2024 — 2º maior rebanho bovino municipal do Brasil</dd>
+      </div>
+      <div class="numero">
+        <dt class="numero__valor">3,25 <span>mi ha</span></dt>
+        <dd class="numero__rotulo">Abrangidos pelo Projeto Fundiário Corumbá</dd>
+      </div>
+      <div class="numero">
+        <dt class="numero__valor">150 <span>km</span></dt>
+        <dd class="numero__rotulo">Faixa de fronteira que alcança todo o município</dd>
+      </div>
+    </dl>
+
+    <p class="territorio__fonte">
+      Dados do Relatório Estratégico de Mercado “A Advocacia da Terra”
+      (Corumbá/MS, agosto de 2026), a partir de fontes públicas — IBGE, INCRA e
+      Embrapa Pantanal.
+    </p>
+  </div>
+</section>
+
+<!-- ====================================================================
+     7. AUTORIDADE + DIFERENCIAIS
+     ==================================================================== -->
+<section class="secao secao--claro" id="autoridade">
+  <div class="container">
+    <div class="secao__cabecalho secao__cabecalho--centro">
+      <span class="etiqueta">Método</span>
+      <h2 class="titulo-secao">Conhecimento local muda a estratégia.</h2>
+    </div>
+
+    <p class="texto-destaque texto-destaque--centro">
+      Atuar no território em que o imóvel está permite compreender elementos que
+      não aparecem em uma consulta à distância: a prática dos cartórios e dos
+      ofícios de registro locais, o histórico registral da região, a realidade
+      fundiária das propriedades, as peculiaridades do Pantanal, a forma como o
+      Judiciário e os órgãos públicos locais tratam a matéria e o modo como as
+      questões territoriais se apresentam concretamente em Corumbá.
+    </p>
+
+    <p class="texto-apoio texto-apoio--centro">
+      O Relatório Estratégico de Mercado identificou, em Corumbá, uma
+      oportunidade de posicionamento em torno da advocacia da terra — matéria que
+      o mercado local ainda não trata de forma dedicada.
+    </p>
+  </div>
+</section>
+
+<section class="secao secao--verde pilares" id="diferenciais">
+  <div class="container">
+    <div class="secao__cabecalho secao__cabecalho--centro">
+      <h2 class="titulo-secao titulo-secao--claro">
+        Não tratamos apenas do processo.<br><em>Tratamos do ativo.</em>
+      </h2>
+    </div>
+
+    <div class="pilares__grade">
+      <article class="pilar">
+        <h3 class="pilar__titulo">Prevenção</h3>
+        <p>Identificar problemas antes que se transformem em litígio.</p>
+      </article>
+      <article class="pilar">
+        <h3 class="pilar__titulo">Investigação</h3>
+        <p>Analisar documentos, registros e informações relevantes.</p>
+      </article>
+      <article class="pilar">
+        <h3 class="pilar__titulo">Regularização</h3>
+        <p>Corrigir, estruturar e organizar juridicamente o patrimônio.</p>
+      </article>
+      <article class="pilar">
+        <h3 class="pilar__titulo">Defesa</h3>
+        <p>Atuar quando o patrimônio já está sob ameaça.</p>
+      </article>
+    </div>
+
+    <p class="pilares__microcopy">Antes do litígio, existe a prevenção.</p>
+  </div>
+</section>
+
+<!-- ====================================================================
+     8. PARA QUEM É
+     ==================================================================== -->
+<section class="secao secao--claro" id="para-quem">
+  <div class="container">
+    <div class="secao__cabecalho secao__cabecalho--centro">
+      <span class="etiqueta">Perfil de atuação</span>
+      <h2 class="titulo-secao">Este trabalho é para quem tem algo a proteger.</h2>
+    </div>
+
+    <ul class="perfis">
+      <li>Proprietários rurais</li>
+      <li>Produtores e fazendeiros</li>
+      <li>Herdeiros de grandes propriedades</li>
+      <li>Compradores de fazendas</li>
+      <li>Vendedores de imóveis rurais</li>
+      <li>Investidores imobiliários</li>
+      <li>Empresas e grupos familiares</li>
+      <li>Proprietários com problemas registrais ou fundiários</li>
+    </ul>
+
+    <p class="fecho-secao fecho-secao--sutil">
+      Patrimônio não se protege apenas quando está ameaçado.
+    </p>
+  </div>
+</section>
+
+<!-- ====================================================================
+     9. ANTES DE COMPRAR
+     ==================================================================== -->
+<section class="secao secao--claro momento-chave" id="comprar">
+  <div class="container momento-chave__interno">
+    <div class="momento-chave__texto">
+      <span class="etiqueta">Antes de comprar uma fazenda</span>
+      <h2 class="titulo-secao">
+        Você está comprando hectares.<br>
+        <em>Mas também está comprando a história jurídica deles.</em>
+      </h2>
+      <p>
+        Uma propriedade rural não deve ser analisada apenas pelo tamanho, preço,
+        localização e produtividade. A aquisição pode exigir investigação da
+        cadeia dominial, da matrícula, dos registros anteriores, da situação
+        fundiária, da área efetiva, do georreferenciamento, das restrições
+        territoriais e de outros elementos que não são visíveis na negociação.
+      </p>
+      <p class="momento-chave__microcopy">
+        Uma propriedade pode valer milhões. A documentação precisa estar à altura.
+      </p>
+      <a class="botao botao--verde" href="#contato">Quero analisar uma propriedade</a>
+    </div>
+    <div class="momento-chave__marca" aria-hidden="true">
+      <svg viewBox="0 0 120 120" focusable="false">
+        <rect x="10" y="10" width="100" height="100" fill="none" stroke="currentColor" stroke-width="1"/>
+        <path d="M10 60 h100 M60 10 v100" stroke="currentColor" stroke-width=".5" opacity=".5"/>
+        <circle cx="60" cy="60" r="26" fill="none" stroke="currentColor" stroke-width="1"/>
+      </svg>
+    </div>
+  </div>
+</section>
+
+<!-- ====================================================================
+     10. ANTES DE VENDER
+     ==================================================================== -->
+<section class="secao secao--pedra momento-chave" id="vender">
+  <div class="container momento-chave__interno momento-chave__interno--invertido">
+    <div class="momento-chave__texto">
+      <span class="etiqueta">Antes de vender</span>
+      <h2 class="titulo-secao">
+        Prepare a propriedade antes de colocá-la no mercado.
+      </h2>
+      <p>
+        Problemas documentais descobertos no meio de uma negociação tendem a
+        aparecer no pior momento: quando o comprador já está analisando, quando o
+        banco já está avaliando o financiamento ou quando o cartório já está
+        examinando o título. Nesse ponto, a discussão deixa de ser sobre preço e
+        passa a ser sobre risco — e a operação pode atrasar ou não se concretizar.
+      </p>
+      <p class="momento-chave__microcopy">
+        O problema que aparece na venda poderia ter sido descoberto antes.
+      </p>
+      <a class="botao botao--verde" href="#contato">Preparar minha propriedade para venda</a>
+    </div>
+    <div class="momento-chave__marca" aria-hidden="true">
+      <svg viewBox="0 0 120 120" focusable="false">
+        <path d="M20 100 L60 20 L100 100 Z" fill="none" stroke="currentColor" stroke-width="1"/>
+        <path d="M35 72 h50" stroke="currentColor" stroke-width=".5" opacity=".6"/>
+      </svg>
+    </div>
+  </div>
+</section>
+
+<!-- ====================================================================
+     11. SUCESSÃO
+     ==================================================================== -->
+<section class="secao secao--claro momento-chave" id="sucessao">
+  <div class="container momento-chave__interno">
+    <div class="momento-chave__texto">
+      <span class="etiqueta">Antes de inventariar</span>
+      <h2 class="titulo-secao">
+        Uma fazenda pode ser dividida no inventário.<br>
+        <em>O problema é quando o problema também é dividido.</em>
+      </h2>
+      <p>
+        Quando um imóvel rural com pendência documental passa por sucessão, a
+        pendência não desaparece: ela se multiplica entre os herdeiros e passa a
+        exigir a concordância de todos para ser resolvida. Planejamento
+        sucessório, inventário, holding rural e doação são instrumentos que podem
+        ser avaliados antes desse momento, e não depois dele.
+      </p>
+      <p class="momento-chave__microcopy">
+        Regularizar é organizar o patrimônio para o futuro.
+      </p>
+      <a class="botao botao--verde" href="#contato">Planejar a sucessão</a>
+    </div>
+    <div class="momento-chave__marca" aria-hidden="true">
+      <svg viewBox="0 0 120 120" focusable="false">
+        <circle cx="60" cy="26" r="12" fill="none" stroke="currentColor" stroke-width="1"/>
+        <path d="M60 38 v22 M24 94 v-22 h72 v22 M60 60 v12" stroke="currentColor" stroke-width="1" fill="none"/>
+        <circle cx="24" cy="104" r="10" fill="none" stroke="currentColor" stroke-width="1"/>
+        <circle cx="60" cy="104" r="10" fill="none" stroke="currentColor" stroke-width="1"/>
+        <circle cx="96" cy="104" r="10" fill="none" stroke="currentColor" stroke-width="1"/>
+      </svg>
+    </div>
+  </div>
+</section>
+
+<!-- ====================================================================
+     12. CONTEÚDO / BLOG
+     ==================================================================== -->
+<section class="secao secao--claro" id="conteudo">
+  <div class="container">
+    <div class="secao__cabecalho secao__cabecalho--centro">
+      <span class="etiqueta">Publicações</span>
+      <h2 class="titulo-secao">Inteligência sobre a terra</h2>
+      <p class="subtitulo-secao">
+        Material técnico sobre documentação, regularização e riscos patrimoniais
+        de imóveis rurais e urbanos.
+      </p>
+    </div>
+
+    <ul class="artigos">
+      <li class="artigo"><a href="conteudo/">Como saber se uma fazenda em Corumbá tem risco na cadeia dominial?</a></li>
+      <li class="artigo"><a href="conteudo/">O que analisar antes de comprar uma fazenda no Pantanal?</a></li>
+      <li class="artigo"><a href="conteudo/">Faixa de fronteira: quais cuidados jurídicos o proprietário rural precisa conhecer?</a></li>
+      <li class="artigo"><a href="conteudo/">Georreferenciamento: por que não é apenas uma questão técnica?</a></li>
+      <li class="artigo"><a href="conteudo/">O que pode aparecer quando uma fazenda é georreferenciada?</a></li>
+      <li class="artigo"><a href="conteudo/">Como preparar uma propriedade rural para venda?</a></li>
+      <li class="artigo"><a href="conteudo/">Como funciona uma Auditoria Dominial de Fronteira?</a></li>
+      <li class="artigo"><a href="conteudo/">INCRA, SPU, SIGEF e matrícula: quem cuida de quê?</a></li>
+      <li class="artigo"><a href="conteudo/">Como evitar herdar problemas jurídicos junto com uma fazenda?</a></li>
+      <li class="artigo"><a href="conteudo/">Regularização de imóvel rural: por onde começar?</a></li>
+      <li class="artigo"><a href="conteudo/">O que fazer quando existe embargo ou bloqueio relacionado à propriedade?</a></li>
+      <li class="artigo"><a href="conteudo/">Compra de fazenda: quais documentos devem ser analisados antes de assinar?</a></li>
+    </ul>
+
+    <p class="artigos__aviso">
+      Os textos estão em preparação. A estrutura já está pronta para publicação —
+      veja <a href="conteudo/">a área de conteúdo</a>.
+    </p>
+  </div>
+</section>
+
+<!-- ====================================================================
+     13. SOBRE JOCSAN
+     ==================================================================== -->
+<section class="secao secao--pedra" id="sobre">
+  <div class="container sobre">
+
+    <div class="sobre__retrato">
+      <!-- ESPAÇO PARA FOTOGRAFIA PROFISSIONAL
+           >>> Adicione o arquivo em assets/img/jocsan-aguillera.webp e
+           substitua o bloco abaixo por:
+           <img src="assets/img/jocsan-aguillera.webp"
+                alt="Jocsan Aguillera, advogado" width="480" height="600" loading="lazy">
+      -->
+      <div class="retrato-vazio">
+        <svg viewBox="0 0 80 80" aria-hidden="true" focusable="false">
+          <circle cx="40" cy="30" r="15" fill="none" stroke="currentColor" stroke-width="1.5"/>
+          <path d="M12 72 c0-16 12-26 28-26 s28 10 28 26" fill="none" stroke="currentColor" stroke-width="1.5"/>
+        </svg>
+        <span>Espaço reservado para fotografia profissional</span>
+      </div>
+    </div>
+
+    <div class="sobre__texto">
+      <span class="etiqueta">Sobre</span>
+      <h2 class="titulo-secao">Experiência local. Visão patrimonial.</h2>
+
+      <p class="sobre__nome">Jocsan Aguillera</p>
+      <p class="sobre__oab">Advogado — OAB/MS nº 18.115</p>
+
+      <p>
+        Atuação concentrada em questões imobiliárias, fundiárias e patrimoniais,
+        com base em Corumbá, Mato Grosso do Sul.
+      </p>
+
+      <!-- CAMPOS A COMPLETAR
+           O texto abaixo é um espaço reservado. Substitua pelo conteúdo real
+           quando as informações forem definidas — formação, especializações,
+           tempo de atuação e áreas de concentração.
+           Nada aqui deve ser preenchido com informação não verificada.
+      -->
+      <div class="a-preencher">
+        <p class="a-preencher__titulo">Espaço reservado para completar</p>
+        <ul>
+          <li>Formação acadêmica</li>
+          <li>Pós-graduação e especializações</li>
+          <li>Tempo e áreas de atuação</li>
+          <li>Atuação territorial e institucional</li>
+          <li>Publicações e participações</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ====================================================================
+     14. FORMULÁRIO
+     ==================================================================== -->
+<section class="secao secao--claro" id="contato">
+  <div class="container contato">
+
+    <div class="contato__intro">
+      <span class="etiqueta">Contato</span>
+      <h2 class="titulo-secao">Fale sobre a propriedade</h2>
+      <p>
+        Descreva brevemente a situação. O retorno é feito para entender o caso e
+        indicar quais documentos e informações precisam ser analisados.
+      </p>
+
+      <ul class="contato__dados" id="contatoDados">
+        <li data-campo="whatsapp">
+          <span class="contato__rotulo">WhatsApp</span>
+          <a id="linkWhatsappTexto" href="https://wa.me/5567998325997" target="_blank" rel="noopener">(67) 99832-5997</a>
+        </li>
+        <li data-campo="email">
+          <span class="contato__rotulo">E-mail</span>
+          <a id="linkEmail" href="mailto:advogadoaguillera@gmail.com">advogadoaguillera@gmail.com</a>
+        </li>
+        <li data-campo="telefoneFixo" hidden>
+          <span class="contato__rotulo">Telefone</span>
+          <a id="linkTelefone" href="#"></a>
+        </li>
+        <li data-campo="endereco" hidden>
+          <span class="contato__rotulo">Endereço</span>
+          <span id="textoEndereco"></span>
+        </li>
+        <li data-campo="horarioAtendimento" hidden>
+          <span class="contato__rotulo">Atendimento</span>
+          <span id="textoHorario"></span>
+        </li>
+        <li>
+          <span class="contato__rotulo">Localização</span>
+          <span>Corumbá — Mato Grosso do Sul</span>
+        </li>
+      </ul>
+    </div>
+
+    <form class="formulario" id="formularioContato" novalidate>
+      <div class="campo">
+        <label for="nome">Nome <span aria-hidden="true">*</span></label>
+        <input type="text" id="nome" name="nome" autocomplete="name" required>
+      </div>
+
+      <div class="campo-duplo">
+        <div class="campo">
+          <label for="whatsapp">WhatsApp <span aria-hidden="true">*</span></label>
+          <input type="tel" id="whatsapp" name="whatsapp" autocomplete="tel" inputmode="tel" required>
+        </div>
+        <div class="campo">
+          <label for="email">E-mail</label>
+          <input type="email" id="email" name="email" autocomplete="email">
+        </div>
+      </div>
+
+      <div class="campo-duplo">
+        <div class="campo">
+          <label for="municipio">Município / localização do imóvel</label>
+          <input type="text" id="municipio" name="municipio">
+        </div>
+        <div class="campo">
+          <label for="tipoImovel">Tipo de imóvel</label>
+          <select id="tipoImovel" name="tipoImovel">
+            <option value="">Selecione</option>
+            <option>Fazenda / imóvel rural</option>
+            <option>Chácara / sítio</option>
+            <option>Imóvel urbano</option>
+            <option>Terreno / lote</option>
+            <option>Mais de um imóvel</option>
+            <option>Outro</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="campo-duplo">
+        <div class="campo">
+          <label for="area">Área aproximada</label>
+          <input type="text" id="area" name="area" placeholder="ex.: 1.200 hectares">
+        </div>
+        <div class="campo">
+          <label for="necessidade">O que você precisa?</label>
+          <select id="necessidade" name="necessidade">
+            <option value="">Selecione</option>
+            <option>Comprar</option>
+            <option>Vender</option>
+            <option>Regularizar</option>
+            <option>Investigar documentação</option>
+            <option>Resolver problema ambiental/fundiário</option>
+            <option>Inventário / sucessão</option>
+            <option>Usucapião / REURB</option>
+            <option>Outro</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="campo">
+        <label for="mensagem">Conte brevemente o que está acontecendo <span aria-hidden="true">*</span></label>
+        <textarea id="mensagem" name="mensagem" rows="5" required></textarea>
+      </div>
+
+      <button type="submit" class="botao botao--verde botao--largo">Solicitar análise</button>
+
+      <p class="formulario__aviso" id="formularioAviso" role="status" aria-live="polite"></p>
+
+      <p class="formulario__nota">
+        As informações enviadas são utilizadas apenas para o contato solicitado.
+        O envio deste formulário não estabelece, por si só, relação
+        advogado-cliente.
+      </p>
+    </form>
+  </div>
+</section>
+
+<!-- ====================================================================
+     15. CTA FINAL
+     ==================================================================== -->
+<section class="secao secao--verde cta-final">
+  <div class="container">
+    <h2 class="cta-final__titulo">
+      Sua propriedade merece ser conhecida antes de ser defendida.
+    </h2>
+    <p class="cta-final__texto">
+      Se você está comprando, vendendo, herdando, regularizando ou enfrentando um
+      problema relacionado a uma propriedade, o primeiro passo é entender
+      juridicamente o patrimônio.
+    </p>
+    <a class="botao botao--ouro botao--grande" href="#contato">Solicitar uma análise</a>
+  </div>
+</section>
+
+</main>
+
+<!-- ====================================================================
+     16. FOOTER
+     ==================================================================== -->
+<footer class="rodape">
+  <div class="container rodape__interno">
+
+    <div class="rodape__marca">
+      <img class="rodape__logo"
+           src="assets/logo/logo-jocsan-aguillera.png"
+           alt="Jocsan Aguillera — Advocacia"
+           width="220" height="88" loading="lazy" decoding="async">
+      <p class="rodape__descritor">Advocacia da Terra</p>
+      <p class="rodape__areas">Direito Imobiliário | Fundiário | Patrimonial</p>
+      <p class="rodape__local">Corumbá — Mato Grosso do Sul</p>
+      <p class="rodape__oab">OAB/MS nº 18.115</p>
+    </div>
+
+    <nav class="rodape__nav" aria-label="Navegação do rodapé">
+      <h2 class="rodape__titulo">Navegação</h2>
+      <ul>
+        <li><a href="#topo">Início</a></li>
+        <li><a href="#solucoes">Soluções</a></li>
+        <li><a href="#auditoria">Auditoria Dominial</a></li>
+        <li><a href="conteudo/">Conteúdo</a></li>
+        <li><a href="#sobre">Sobre</a></li>
+        <li><a href="#contato">Contato</a></li>
+      </ul>
+    </nav>
+
+    <div class="rodape__contato">
+      <h2 class="rodape__titulo">Contato</h2>
+      <ul id="rodapeContato">
+        <li data-campo="whatsapp">
+          <a id="rodapeWhatsapp" href="https://wa.me/5567998325997" target="_blank" rel="noopener">(67) 99832-5997</a>
+        </li>
+        <li data-campo="email">
+          <a id="rodapeEmail" href="mailto:advogadoaguillera@gmail.com">advogadoaguillera@gmail.com</a>
+        </li>
+        <li data-campo="telefoneFixo" hidden><a id="rodapeTelefone" href="#"></a></li>
+        <li data-campo="endereco" hidden><span id="rodapeEndereco"></span></li>
+        <li data-campo="horarioAtendimento" hidden><span id="rodapeHorario"></span></li>
+      </ul>
+
+      <!-- REDES SOCIAIS
+           Aparecem automaticamente assim que forem preenchidas em config.js
+      -->
+      <ul class="rodape__redes" id="rodapeRedes">
+        <li data-rede="instagram" hidden><a id="redeInstagram" href="#" target="_blank" rel="noopener">Instagram</a></li>
+        <li data-rede="linkedin"  hidden><a id="redeLinkedin"  href="#" target="_blank" rel="noopener">LinkedIn</a></li>
+        <li data-rede="facebook"  hidden><a id="redeFacebook"  href="#" target="_blank" rel="noopener">Facebook</a></li>
+        <li data-rede="youtube"   hidden><a id="redeYoutube"   href="#" target="_blank" rel="noopener">YouTube</a></li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="rodape__base">
+    <div class="container rodape__base-interno">
+      <p>&copy; <span id="anoAtual">2026</span> Jocsan Aguillera — Advocacia da Terra. Todos os direitos reservados.</p>
+      <p class="rodape__conformidade">
+        Conteúdo de caráter meramente informativo, em conformidade com o Código
+        de Ética e Disciplina da OAB. Não constitui oferta, captação de clientela
+        ou promessa de resultado.
+      </p>
+    </div>
+  </div>
+</footer>
+
+<!-- Botão flutuante de WhatsApp -->
+<a class="whatsapp-flutuante" id="whatsappFlutuante"
+   href="https://wa.me/5567998325997"
+   target="_blank" rel="noopener"
+   aria-label="Falar sobre uma propriedade pelo WhatsApp">
+  <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+    <path fill="currentColor" d="M17.47 14.38c-.3-.15-1.75-.86-2.02-.96-.27-.1-.47-.15-.67.15-.2.3-.77.96-.94 1.16-.17.2-.35.22-.64.07-.3-.15-1.25-.46-2.38-1.47-.88-.78-1.47-1.75-1.65-2.05-.17-.3-.02-.46.13-.6.14-.14.3-.35.45-.53.15-.18.2-.3.3-.5.1-.2.05-.38-.02-.53-.08-.15-.67-1.6-.92-2.2-.24-.58-.49-.5-.67-.51h-.57c-.2 0-.52.07-.79.38-.27.3-1.04 1.01-1.04 2.470s1.06 2.87 1.21 3.07c.15.2 2.1 3.2 5.08 4.49.71.3 1.26.49 1.69.63.71.22 1.36.19 1.87.12.57-.09 1.75-.72 2-1.41.25-.69.25-1.28.17-1.41-.07-.13-.27-.2-.57-.35M12.04 21.5h-.01a9.4 9.4 0 01-4.79-1.31l-.34-.2-3.56.93.95-3.47-.22-.36a9.38 9.38 0 01-1.44-5.01c0-5.18 4.22-9.4 9.42-9.4 2.51 0 4.88.98 6.65 2.76a9.34 9.34 0 012.75 6.65c0 5.19-4.22 9.41-9.41 9.41M20.52 3.45A11.24 11.24 0 0012.04 0C5.84 0 .8 5.04.8 11.24c0 1.98.52 3.91 1.5 5.61L.7 22.9l6.19-1.62a11.2 11.2 0 005.15 1.31h.01c6.19 0 11.24-5.04 11.24-11.24 0-3-1.17-5.82-3.29-7.94"/>
+  </svg>
+  <span class="whatsapp-flutuante__texto">Falar sobre uma propriedade</span>
+</a>
+
+<!-- Dados estruturados (Schema.org) -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Attorney",
+  "name": "Jocsan Aguillera — Advocacia da Terra",
+  "description": "Advocacia especializada em direito imobiliário, fundiário e patrimonial, com atuação em imóveis rurais, regularização fundiária e auditoria dominial em Corumbá e no Pantanal.",
+  "knowsAbout": [
+    "Direito Imobiliário",
+    "Direito Agrário",
+    "Direito Fundiário",
+    "Regularização fundiária",
+    "Usucapião",
+    "Georreferenciamento",
+    "Faixa de fronteira",
+    "Inventário e sucessão rural",
+    "REURB"
+  ],
+  "email": "advogadoaguillera@gmail.com",
+  "telephone": "+5567998325997",
+  "address": {
+    "@type": "PostalAddress",
+    "addressLocality": "Corumbá",
+    "addressRegion": "MS",
+    "addressCountry": "BR"
+  },
+  "areaServed": [
+    { "@type": "City", "name": "Corumbá" },
+    { "@type": "City", "name": "Ladário" },
+    { "@type": "State", "name": "Mato Grosso do Sul" }
+  ],
+  "availableLanguage": "Portuguese"
+}
+</script>
+
+<script src="config.js"></script>
+<script src="js/main.js" defer></script>
+</body>
+</html>
