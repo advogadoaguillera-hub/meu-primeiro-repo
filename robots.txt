@@ -1,0 +1,6 @@
+# Advocacia da Terra — Jocsan Aguillera
+User-agent: *
+Allow: /
+
+# Substitua pelo domínio definitivo quando ele for registrado.
+# Sitemap: https://SEU-DOMINIO.com.br/sitemap.xml

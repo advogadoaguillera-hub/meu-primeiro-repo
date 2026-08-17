@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Substitua "https://SEU-DOMINIO.com.br" pelo domínio definitivo assim que ele
+  for registrado. Acrescente uma entrada <url> para cada artigo publicado.
+-->
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+
+  <url>
+    <loc>https://SEU-DOMINIO.com.br/</loc>
+    <changefreq>monthly</changefreq>
+    <priority>1.0</priority>
+  </url>
+
+  <url>
+    <loc>https://SEU-DOMINIO.com.br/conteudo/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+</urlset>
