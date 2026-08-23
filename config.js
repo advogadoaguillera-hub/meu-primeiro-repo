@@ -38,14 +38,27 @@ window.SITE_CONFIG = {
 
     email: 'advogadoaguillera@gmail.com',
 
-    // ---- CAMPOS A PREENCHER QUANDO HOUVER ----
-    telefoneFixo: '',        // ex.: '(67) 3231-0000'
-    endereco: '',            // ex.: 'Rua Exemplo, 123 — Centro'
+    endereco: 'Rua Firmo de Matos, 1464',
     complemento: '',         // ex.: 'Sala 4'
+    bairro: 'Centro',
     cidade: 'Corumbá',
     estado: 'MS',
+
+    // ---- CAMPOS A PREENCHER QUANDO HOUVER ----
+    telefoneFixo: '',        // ex.: '(67) 3231-0000'
     cep: '',                 // ex.: '79300-000'
     horarioAtendimento: '',  // ex.: 'Segunda a sexta, 8h às 18h'
+  },
+
+  /* ---------------------------------------------------------------------
+     2-B. ABRANGÊNCIA DO ATENDIMENTO
+     Escritório em Corumbá/MS, com atendimento remoto no Brasil e no exterior.
+     --------------------------------------------------------------------- */
+  atendimento: {
+    base: 'Corumbá — Mato Grosso do Sul',
+    abrangencia: 'Todo o Brasil e clientes no exterior',
+    idiomas: ['Português', 'Inglês'],
+    remoto: true,
   },
 
   /* ---------------------------------------------------------------------

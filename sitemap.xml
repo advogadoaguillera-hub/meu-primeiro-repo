@@ -1,20 +1,43 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
   Substitua "https://SEU-DOMINIO.com.br" pelo domínio definitivo assim que ele
-  for registrado. Acrescente uma entrada <url> para cada artigo publicado.
+  for registrado. Acrescente uma entrada <url> para cada novo artigo publicado.
 -->
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 
   <url>
     <loc>https://SEU-DOMINIO.com.br/</loc>
+    <lastmod>2026-08-17</lastmod>
     <changefreq>monthly</changefreq>
     <priority>1.0</priority>
   </url>
 
   <url>
     <loc>https://SEU-DOMINIO.com.br/conteudo/</loc>
+    <lastmod>2026-08-17</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://SEU-DOMINIO.com.br/conteudo/como-provar-a-posse-de-um-imovel.html</loc>
+    <lastmod>2026-08-17</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.7</priority>
+  </url>
+
+  <url>
+    <loc>https://SEU-DOMINIO.com.br/conteudo/comprar-fazenda-sem-herdar-vicio-de-origem.html</loc>
+    <lastmod>2026-08-17</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.7</priority>
+  </url>
+
+  <url>
+    <loc>https://SEU-DOMINIO.com.br/conteudo/bloqueio-de-bens-por-dano-ambiental.html</loc>
+    <lastmod>2026-08-17</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.7</priority>
   </url>
 
 </urlset>

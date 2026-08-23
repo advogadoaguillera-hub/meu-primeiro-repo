@@ -91,7 +91,7 @@
     }
 
     // --- Endereço ---
-    var partes = [contato.endereco, contato.complemento].filter(preenchido);
+    var partes = [contato.endereco, contato.complemento, contato.bairro].filter(preenchido);
     var localidade = [contato.cidade, contato.estado].filter(preenchido).join(' — ');
     if (preenchido(contato.cep)) partes.push('CEP ' + contato.cep);
     var enderecoCompleto = partes.length

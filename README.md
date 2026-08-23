@@ -1,5 +1,18 @@
 # Advocacia da Terra — Jocsan Aguillera
 
+> **Este repositório contém dois sites independentes:**
+>
+> | Site | Pasta | Posicionamento |
+> |---|---|---|
+> | **Advocacia da Terra** | raiz (`index.html`) | Direito imobiliário, fundiário e patrimonial |
+> | **Defesa Criminal Estratégica** | [`defesa-criminal/`](defesa-criminal/) | Advocacia criminal — drogas, habeas corpus, cannabis medicinal, fraudes, vítimas |
+>
+> Cada um tem identidade visual, conteúdo, `config.js` e README próprios, e pode
+> ser publicado separadamente. Este README trata do site **Advocacia da Terra**;
+> para o site criminal, veja [`defesa-criminal/README.md`](defesa-criminal/README.md).
+
+---
+
 Site institucional de **Jocsan Aguillera** (OAB/MS nº 18.115), com atuação em
 direito imobiliário, fundiário e patrimonial em Corumbá, no Pantanal e em Mato
 Grosso do Sul.
@@ -209,6 +222,9 @@ Ao acrescentar conteúdo novo, mantenha esse padrão.
 - [ ] Fotografia profissional para a seção "Sobre"
 - [ ] Texto de formação, especializações e experiência (seção "Sobre")
 - [ ] Versão clara do logotipo para o cabeçalho — ver [`assets/logo/README.md`](assets/logo/README.md)
+- [ ] Enviar os tomos de **Direito das Coisas** de Pontes de Miranda, caso se
+      queira aprofundar a camada doutrinária dos artigos (os tomos XXXII e
+      XXXIII tratam de títulos ao portador, não de imóveis)
 - [ ] Fotografia do Pantanal para a primeira tela *(opcional)* — ver [`assets/img/README.md`](assets/img/README.md)
 - [ ] Endereço, telefone fixo e horário, se houver — em `config.js`
 - [ ] Instagram e LinkedIn, quando existirem — em `config.js`
