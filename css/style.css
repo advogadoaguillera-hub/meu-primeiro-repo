@@ -622,6 +622,95 @@ textarea:focus-visible {
 .solucao__link::after { content: ' →'; color: var(--ouro); }
 .solucao__link:hover { color: var(--ouro-escuro); }
 
+/* ---- Página de moradia (público urbano) ---- */
+.moradia-hero { padding-top: 4.5rem; padding-bottom: 4.5rem; }
+.moradia-hero .titulo-secao { margin-bottom: 1.25rem; }
+.moradia-hero__texto {
+  max-width: 62ch;
+  font-size: 1.06rem;
+  color: var(--texto-claro);
+  margin-bottom: 2.25rem;
+}
+
+.situacoes {
+  display: grid;
+  gap: 1.5rem;
+}
+
+.situacao {
+  display: flex;
+  flex-direction: column;
+  padding: 1.9rem 1.75rem;
+  background: #fff;
+  border: var(--linha-escura);
+  border-left: 3px solid var(--ouro);
+}
+.situacao h3 {
+  font-size: 1.12rem;
+  color: var(--verde-profundo);
+  margin-bottom: .75rem;
+  line-height: 1.35;
+}
+.situacao p {
+  font-size: .93rem;
+  color: var(--texto-suave);
+  margin-bottom: 1.25rem;
+}
+.situacao a {
+  margin-top: auto;
+  font-size: .78rem;
+  font-weight: 600;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  text-decoration: none;
+  color: var(--ouro-escuro);
+  transition: color var(--transicao);
+}
+.situacao a:hover { color: var(--verde-profundo); }
+
+.cta-final__alternativa {
+  margin-top: 1.75rem;
+  font-size: .92rem;
+  color: var(--texto-claro-suave);
+}
+.cta-final__alternativa a {
+  color: var(--ouro-claro);
+  text-decoration: none;
+  border-bottom: 1px solid rgba(200, 168, 78, .5);
+}
+
+/* ---- Ponte para a área de imóvel urbano ---- */
+.ponte-moradia__interno {
+  display: grid;
+  gap: 2.5rem;
+  align-items: center;
+}
+.ponte-moradia__texto p { color: var(--texto-suave); margin-bottom: 1.75rem; }
+
+.ponte-moradia__lista {
+  display: grid;
+  gap: 0;
+  border-top: var(--linha-ouro);
+}
+.ponte-moradia__lista li { border-bottom: 1px solid rgba(21, 21, 21, .1); }
+.ponte-moradia__lista a {
+  display: block;
+  padding: .95rem 1.5rem .95rem 0;
+  position: relative;
+  text-decoration: none;
+  font-family: var(--fonte-titulo);
+  font-size: 1.02rem;
+  color: var(--verde-profundo);
+  transition: color var(--transicao), padding-left var(--transicao);
+}
+.ponte-moradia__lista a::after {
+  content: '→';
+  position: absolute;
+  right: .2rem;
+  color: var(--ouro);
+}
+.ponte-moradia__lista a:hover { color: var(--ouro-escuro); padding-left: .5rem; }
+
 /* ---- Prateleira de serviços ---- */
 .prateleira {
   display: grid;
@@ -1430,6 +1519,7 @@ textarea:focus-visible {
   .solucoes     { grid-template-columns: repeat(2, 1fr); }
   .prateleira   { grid-template-columns: repeat(2, 1fr); gap: 2.25rem 2.5rem; }
   .internacional__grade { grid-template-columns: repeat(2, 1fr); }
+  .situacoes    { grid-template-columns: repeat(2, 1fr); }
   .numeros      { grid-template-columns: repeat(2, 1fr); }
   .pilares__grade { grid-template-columns: repeat(2, 1fr); }
   .perfis       { grid-template-columns: repeat(2, 1fr); }
@@ -1475,6 +1565,7 @@ textarea:focus-visible {
   .solucoes { grid-template-columns: repeat(3, 1fr); }
   .prateleira { grid-template-columns: repeat(3, 1fr); gap: 3rem 3rem; }
   .internacional__grade { grid-template-columns: repeat(4, 1fr); }
+  .situacoes  { grid-template-columns: repeat(3, 1fr); }
   .numeros  { grid-template-columns: repeat(4, 1fr); }
   .pilares__grade { grid-template-columns: repeat(4, 1fr); }
   .perfis   { grid-template-columns: repeat(4, 1fr); }
@@ -1487,6 +1578,7 @@ textarea:focus-visible {
   .momento-chave__interno--invertido .momento-chave__marca { order: 1; }
   .momento-chave__marca { display: block; }
 
+  .ponte-moradia__interno { grid-template-columns: 1.15fr 1fr; gap: 4rem; }
   .sobre   { grid-template-columns: 380px 1fr; gap: 4rem; }
   .contato { grid-template-columns: 1fr 1.15fr; gap: 4.5rem; }
 
