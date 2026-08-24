@@ -52,12 +52,12 @@ window.SITE_CONFIG = {
 
   /* ---------------------------------------------------------------------
      2-B. ABRANGÊNCIA DO ATENDIMENTO
-     Escritório em Corumbá/MS, com atendimento remoto no Brasil e no exterior.
+     Escritório em Corumbá/MS, com atendimento em todo o Brasil.
      --------------------------------------------------------------------- */
   atendimento: {
     base: 'Corumbá — Mato Grosso do Sul',
-    abrangencia: 'Todo o Brasil e clientes no exterior',
-    idiomas: ['Português', 'Inglês'],
+    abrangencia: 'Corumbá/MS e todo o Brasil',
+    idiomas: ['Português'],
     remoto: true,
   },
 

@@ -679,6 +679,243 @@ textarea:focus-visible {
   border-bottom: 1px solid rgba(200, 168, 78, .5);
 }
 
+/* ==========================================================================
+   BLOCO DIDÁTICO — risco, caminho, matrícula, profissionais
+   ========================================================================== */
+
+/* Título em peso forte, para leitura rápida */
+.titulo-forte {
+  font-family: var(--fonte-texto);
+  font-weight: 800;
+  letter-spacing: -.02em;
+  line-height: 1.15;
+}
+.titulo-forte em { font-style: normal; }
+
+/* Botão em formato pílula (referência visual pedida) */
+.botao--pilula { border-radius: 999px; padding-left: 2.2rem; padding-right: 2.2rem; }
+
+/* ---- Faixa de alerta ---- */
+.faixa-alerta {
+  background: var(--verde-medio);
+  color: var(--off-white);
+  padding: 1.15rem 0;
+  text-align: center;
+  border-bottom: 3px solid var(--ouro);
+}
+.faixa-alerta p { margin: 0; font-size: 1rem; }
+.faixa-alerta strong { color: var(--ouro-claro); }
+
+/* ---- Riscos ---- */
+.riscos { display: grid; gap: 1.5rem; margin-top: 1rem; }
+
+.risco {
+  background: #fff;
+  border: var(--linha-escura);
+  border-top: 4px solid #A6402C;
+  border-radius: 4px;
+  padding: 2rem 1.75rem;
+}
+.risco__figura { margin-bottom: 1.25rem; }
+.risco__figura svg { width: 110px; height: 92px; }
+.risco h3 {
+  font-family: var(--fonte-texto);
+  font-weight: 800;
+  font-size: 1.2rem;
+  color: var(--verde-profundo);
+  margin-bottom: .85rem;
+  line-height: 1.25;
+}
+.risco p { font-size: .95rem; color: var(--texto-suave); }
+.risco__consequencia {
+  margin-top: 1rem !important;
+  padding-top: 1rem;
+  border-top: var(--linha-escura);
+  font-weight: 700;
+  color: #8F3524 !important;
+}
+
+/* ---- Caminho: contrato → escritura → matrícula ---- */
+.caminho {
+  display: grid;
+  gap: 1.5rem;
+  counter-reset: passo;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.caminho__passo {
+  position: relative;
+  background: var(--verde-escuro);
+  border: 1px solid rgba(200, 168, 78, .3);
+  border-radius: 6px;
+  padding: 2rem 1.75rem;
+}
+.caminho__passo--final {
+  border-color: var(--ouro);
+  border-width: 2px;
+  background: linear-gradient(180deg, #0d4634 0%, var(--verde-escuro) 100%);
+}
+
+.caminho__figura { margin-bottom: 1.1rem; }
+.caminho__figura svg { width: 84px; height: 84px; }
+
+.caminho__numero {
+  display: inline-block;
+  font-size: .68rem;
+  font-weight: 700;
+  letter-spacing: .18em;
+  text-transform: uppercase;
+  color: var(--ouro);
+  margin-bottom: .5rem;
+}
+.caminho__passo h3 {
+  font-family: var(--fonte-texto);
+  font-weight: 800;
+  font-size: 1.3rem;
+  color: var(--off-white);
+  margin-bottom: .8rem;
+}
+.caminho__passo p { font-size: .94rem; color: var(--texto-claro); }
+
+.caminho__aviso {
+  margin-top: 1.1rem !important;
+  padding-top: .9rem;
+  border-top: 1px solid rgba(200, 168, 78, .25);
+  font-weight: 700;
+  color: #E9A08C !important;
+}
+.caminho__aviso--ok { color: var(--ouro-claro) !important; }
+
+.caminho__remate {
+  margin-top: 3rem;
+  padding: 2rem;
+  background: rgba(200, 168, 78, .1);
+  border-left: 4px solid var(--ouro);
+  border-radius: 4px;
+  text-align: center;
+}
+.caminho__remate p {
+  max-width: 62ch;
+  margin: 0 auto 1.75rem;
+  color: var(--texto-claro);
+  font-size: 1.02rem;
+}
+.caminho__remate strong { color: var(--ouro-claro); }
+
+/* ---- Matrícula: a foto do imóvel ---- */
+.matricula-figura {
+  background: #fff;
+  border: 1px solid rgba(200, 168, 78, .45);
+  border-radius: 6px;
+  padding: 1.5rem 1rem;
+  overflow-x: auto;
+}
+.matricula-figura svg { width: 100%; min-width: 620px; height: auto; display: block; }
+
+/* Aviso de rolagem — some assim que a figura couber inteira na tela */
+.dica-arrastar {
+  margin-bottom: .6rem;
+  font-size: .8rem;
+  font-weight: 600;
+  letter-spacing: .06em;
+  color: var(--ouro-escuro);
+  text-align: right;
+}
+@media (min-width: 700px) { .dica-arrastar { display: none; } }
+
+.matricula-notas {
+  display: grid;
+  gap: 1.25rem;
+  margin-top: 2rem;
+}
+.matricula-nota {
+  padding: 1.5rem 1.4rem;
+  background: #fff;
+  border: var(--linha-escura);
+  border-left: 3px solid var(--ouro);
+}
+.matricula-nota h3 {
+  font-family: var(--fonte-texto);
+  font-weight: 800;
+  font-size: 1.02rem;
+  color: var(--verde-profundo);
+  margin-bottom: .55rem;
+}
+.matricula-nota p { font-size: .92rem; color: var(--texto-suave); }
+
+/* ---- Profissionais do negócio ---- */
+.profissionais {
+  display: grid;
+  gap: 1.25rem;
+}
+.profissional {
+  padding: 1.75rem 1.5rem;
+  background: #fff;
+  border: var(--linha-escura);
+  border-radius: 4px;
+  text-align: center;
+}
+.profissional h3 {
+  font-family: var(--fonte-texto);
+  font-weight: 800;
+  font-size: 1.08rem;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+  color: var(--verde-profundo);
+  margin-bottom: .7rem;
+}
+.profissional p { font-size: .92rem; color: var(--texto-suave); }
+
+.profissional--destaque {
+  background: var(--verde-profundo);
+  border-color: var(--ouro);
+}
+.profissional--destaque h3 { color: var(--ouro-claro); }
+.profissional--destaque p { color: var(--texto-claro); }
+
+.profissionais__remate {
+  margin-top: 2.5rem;
+  text-align: center;
+  font-size: 1.1rem;
+  color: var(--texto);
+}
+.profissionais__remate strong { color: var(--verde-profundo); }
+
+/* ---- Credenciais (Sobre) ---- */
+.credenciais {
+  display: grid;
+  gap: 1.1rem;
+  margin: 1.75rem 0;
+}
+.credenciais li {
+  position: relative;
+  padding-left: 1.6rem;
+  font-size: .95rem;
+  color: var(--texto-suave);
+  line-height: 1.6;
+}
+.credenciais li::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: .55em;
+  width: 8px;
+  height: 8px;
+  background: var(--ouro);
+  transform: rotate(45deg);
+}
+.credenciais strong { color: var(--verde-profundo); display: block; }
+
+.sobre__fecho {
+  margin-top: 1.5rem;
+  padding-top: 1.25rem;
+  border-top: var(--linha-ouro);
+  font-style: italic;
+  color: var(--texto-suave) !important;
+}
+
 /* ---- Ponte para a área de imóvel urbano ---- */
 .ponte-moradia__interno {
   display: grid;
@@ -1520,6 +1757,10 @@ textarea:focus-visible {
   .prateleira   { grid-template-columns: repeat(2, 1fr); gap: 2.25rem 2.5rem; }
   .internacional__grade { grid-template-columns: repeat(2, 1fr); }
   .situacoes    { grid-template-columns: repeat(2, 1fr); }
+  .riscos       { grid-template-columns: repeat(3, 1fr); }
+  .caminho      { grid-template-columns: repeat(3, 1fr); }
+  .matricula-notas { grid-template-columns: repeat(3, 1fr); }
+  .profissionais   { grid-template-columns: repeat(2, 1fr); }
   .numeros      { grid-template-columns: repeat(2, 1fr); }
   .pilares__grade { grid-template-columns: repeat(2, 1fr); }
   .perfis       { grid-template-columns: repeat(2, 1fr); }
@@ -1566,6 +1807,7 @@ textarea:focus-visible {
   .prateleira { grid-template-columns: repeat(3, 1fr); gap: 3rem 3rem; }
   .internacional__grade { grid-template-columns: repeat(4, 1fr); }
   .situacoes  { grid-template-columns: repeat(3, 1fr); }
+  .profissionais { grid-template-columns: repeat(4, 1fr); }
   .numeros  { grid-template-columns: repeat(4, 1fr); }
   .pilares__grade { grid-template-columns: repeat(4, 1fr); }
   .perfis   { grid-template-columns: repeat(4, 1fr); }
