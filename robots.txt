@@ -1,6 +1,14 @@
-# Advocacia da Terra — Jocsan Aguillera
+# Jocsan Aguillera — OAB/MS nº 18.115
+# Advocacia da Terra (raiz) e Defesa Criminal (/defesa-criminal/)
+
 User-agent: *
 Allow: /
+
+# Arquivos de apoio e gabaritos — não devem ser indexados
+Disallow: /conteudo/_modelo-artigo.html
+Disallow: /defesa-criminal/_partes/
+Disallow: /defesa-criminal/tools/
+Disallow: /defesa-criminal/artigos/_modelo-artigo.html
 
 # Substitua pelo domínio definitivo quando ele for registrado.
 # Sitemap: https://SEU-DOMINIO.com.br/sitemap.xml

@@ -1,0 +1,19 @@
+{
+  "name": "Jocsan Aguillera Advocacia — Defesa Criminal Estratégica",
+  "short_name": "Jocsan Aguillera",
+  "description": "Advocacia criminal com atuação estratégica em defesa penal, drogas, habeas corpus, cannabis medicinal, fraudes e reparação de danos decorrentes de crime.",
+  "lang": "pt-BR",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#0A0C0B",
+  "theme_color": "#0A0C0B",
+  "icons": [
+    {
+      "src": "./favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}

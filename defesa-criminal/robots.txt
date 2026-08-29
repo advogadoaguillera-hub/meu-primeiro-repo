@@ -1,0 +1,10 @@
+User-agent: *
+Allow: /
+
+# Arquivos de apoio — não devem ser indexados
+Disallow: /_partes/
+Disallow: /tools/
+Disallow: /artigos/_modelo-artigo.html
+
+# PREENCHER quando o domínio definitivo existir:
+# Sitemap: https://SEU-DOMINIO/sitemap.xml
