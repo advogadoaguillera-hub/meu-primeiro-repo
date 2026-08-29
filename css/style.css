@@ -735,6 +735,24 @@ textarea:focus-visible {
   color: #8F3524 !important;
 }
 
+/* Variante neutra: os três momentos do imóvel são orientação, não alerta */
+.risco--neutro { border-top-color: var(--ouro); display: flex; flex-direction: column; }
+.risco__consequencia--neutra { color: var(--verde-profundo) !important; }
+
+.risco__link {
+  margin-top: auto;
+  padding-top: 1.25rem;
+  font-size: .78rem;
+  font-weight: 700;
+  letter-spacing: .09em;
+  text-transform: uppercase;
+  text-decoration: none;
+  color: var(--ouro-escuro);
+  transition: color var(--transicao);
+}
+.risco__link::after { content: ' →'; }
+.risco__link:hover { color: var(--verde-profundo); }
+
 /* ---- Caminho: contrato → escritura → matrícula ---- */
 .caminho {
   display: grid;
@@ -914,6 +932,91 @@ textarea:focus-visible {
   border-top: var(--linha-ouro);
   font-style: italic;
   color: var(--texto-suave) !important;
+}
+
+/* ---- Serviço especial: HC para cultivo medicinal ---- */
+.hc__duplo {
+  display: grid;
+  gap: 1.5rem;
+  margin-bottom: 2.5rem;
+}
+
+.hc__lado {
+  background: var(--verde-profundo);
+  border: 1px solid rgba(200, 168, 78, .28);
+  border-radius: 6px;
+  padding: 2rem 1.75rem;
+}
+.hc__lado--terra { border-color: var(--ouro); border-width: 2px; }
+
+.hc__figura { margin-bottom: 1.1rem; }
+.hc__figura svg { width: 76px; height: 76px; }
+
+.hc__lado h3 {
+  font-family: var(--fonte-texto);
+  font-weight: 800;
+  font-size: 1.25rem;
+  color: var(--off-white);
+  margin-bottom: .8rem;
+}
+.hc__lado p { color: var(--texto-claro); font-size: .95rem; }
+
+.hc__nota {
+  margin-top: 1.1rem !important;
+  padding-top: .9rem;
+  border-top: 1px solid rgba(200, 168, 78, .25);
+  font-weight: 700;
+  color: #E9A08C !important;
+}
+.hc__nota--ouro { color: var(--ouro-claro) !important; }
+
+.hc__porque {
+  padding: 2rem 1.75rem;
+  background: rgba(200, 168, 78, .08);
+  border-left: 4px solid var(--ouro);
+  border-radius: 4px;
+}
+.hc__porque h3 {
+  font-family: var(--fonte-texto);
+  font-weight: 800;
+  font-size: 1.15rem;
+  color: var(--ouro-claro);
+  margin-bottom: 1.25rem;
+}
+.hc__porque ul { display: grid; gap: 1rem; }
+.hc__porque li {
+  position: relative;
+  padding-left: 1.5rem;
+  font-size: .94rem;
+  color: var(--texto-claro);
+  line-height: 1.6;
+}
+.hc__porque li::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: .6em;
+  width: 7px;
+  height: 7px;
+  background: var(--ouro);
+  transform: rotate(45deg);
+}
+.hc__porque strong { color: var(--off-white); }
+
+.hc__remate { margin-top: 2.5rem; text-align: center; }
+.hc__credencial {
+  max-width: 66ch;
+  margin: 0 auto 1.25rem;
+  font-size: 1.02rem;
+  color: var(--texto-claro);
+}
+.hc__credencial strong { color: var(--ouro-claro); }
+.hc__aviso {
+  max-width: 72ch;
+  margin: 0 auto 1.75rem;
+  font-size: .84rem;
+  line-height: 1.65;
+  color: var(--texto-claro-suave);
 }
 
 /* ---- Ponte para a área de imóvel urbano ---- */
@@ -1757,6 +1860,7 @@ textarea:focus-visible {
   .prateleira   { grid-template-columns: repeat(2, 1fr); gap: 2.25rem 2.5rem; }
   .internacional__grade { grid-template-columns: repeat(2, 1fr); }
   .situacoes    { grid-template-columns: repeat(2, 1fr); }
+  .hc__duplo    { grid-template-columns: repeat(2, 1fr); }
   .riscos       { grid-template-columns: repeat(3, 1fr); }
   .caminho      { grid-template-columns: repeat(3, 1fr); }
   .matricula-notas { grid-template-columns: repeat(3, 1fr); }
