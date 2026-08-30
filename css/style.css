@@ -18,6 +18,77 @@
    ========================================================================== */
 
 /* ==========================================================================
+   00. FONTES DA MARCA — EB Garamond (títulos) + Libre Franklin (texto)
+   Ambas self-hosted, licença OFL (arquivos e licenças em assets/fonts/).
+   Nenhuma requisição externa: nada sai do navegador do visitante para
+   servidores de terceiros (LGPD) e nada depende da fonte instalada na
+   máquina de quem visita — o site é idêntico no Mac, no Windows e no
+   celular.
+   EB Garamond: o serifado renascentista do direito de propriedade —
+   autoridade sem rigidez. Libre Franklin: a gótica de jornal americano,
+   feita para manchete curta e leitura longa. Par clássico de redação.
+   Para voltar às fontes do sistema, remova 'EB Garamond' de
+   --fonte-titulo e 'Libre Franklin' de --fonte-texto, mais abaixo.
+   ========================================================================== */
+@font-face {
+  font-family: 'EB Garamond';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('../assets/fonts/eb-garamond-400.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'EB Garamond';
+  font-style: italic;
+  font-weight: 400;
+  font-display: swap;
+  src: url('../assets/fonts/eb-garamond-400-italic.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'EB Garamond';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url('../assets/fonts/eb-garamond-600.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'EB Garamond';
+  font-style: italic;
+  font-weight: 600;
+  font-display: swap;
+  src: url('../assets/fonts/eb-garamond-600-italic.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'Libre Franklin';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('../assets/fonts/libre-franklin-400.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Libre Franklin';
+  font-style: italic;
+  font-weight: 400;
+  font-display: swap;
+  src: url('../assets/fonts/libre-franklin-400-italic.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Libre Franklin';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url('../assets/fonts/libre-franklin-600.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Libre Franklin';
+  font-style: normal;
+  font-weight: 800;
+  font-display: swap;
+  src: url('../assets/fonts/libre-franklin-800.woff2') format('woff2');
+}
+
+/* ==========================================================================
    01. VARIÁVEIS E RESET
    ========================================================================== */
 :root {
@@ -42,8 +113,8 @@
   --texto-claro-suave: #A9B8A4;
 
   /* Tipografia */
-  --fonte-titulo: 'Iowan Old Style', 'Palatino Linotype', Palatino, 'Book Antiqua', Georgia, 'Times New Roman', serif;
-  --fonte-texto:  -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  --fonte-titulo: 'EB Garamond', 'Iowan Old Style', 'Palatino Linotype', Palatino, 'Book Antiqua', Georgia, 'Times New Roman', serif;
+  --fonte-texto:  'Libre Franklin', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
 
   /* Ritmo */
   --largura-max: 1180px;
@@ -1385,6 +1456,163 @@ textarea:focus-visible {
 .retrato-vazio svg { width: 76px; height: 76px; }
 .retrato-vazio span { font-size: .8rem; letter-spacing: .06em; }
 
+/* ---- Retrato ---- */
+.retrato {
+  margin: 0;
+  position: relative;
+}
+.retrato img {
+  width: 100%;
+  height: auto;
+  border-radius: 4px;
+  border: 1px solid rgba(200, 168, 78, .45);
+  box-shadow: 0 14px 40px rgba(6, 40, 31, .18);
+}
+.retrato figcaption {
+  display: flex;
+  flex-direction: column;
+  gap: .2rem;
+  margin-top: 1rem;
+  padding-top: .9rem;
+  border-top: var(--linha-ouro);
+}
+.retrato figcaption strong {
+  font-family: var(--fonte-titulo);
+  font-size: 1.1rem;
+  color: var(--verde-profundo);
+  font-weight: 600;
+}
+.retrato figcaption span {
+  font-size: .78rem;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: var(--ouro-escuro);
+}
+
+/* ---- Botão com ícone de play ---- */
+.botao--play {
+  display: inline-flex;
+  align-items: center;
+  gap: .55rem;
+}
+.botao--play svg { width: 17px; height: 17px; flex: none; }
+
+/* ---- Seção de vídeos ---- */
+.videos { display: grid; gap: 1.75rem; }
+
+.video-card__capa {
+  position: relative;
+  display: block;
+  width: 100%;
+  padding: 0;
+  aspect-ratio: 16 / 9;
+  overflow: hidden;
+  background: var(--verde-profundo);
+  border: 1px solid rgba(200, 168, 78, .35);
+  border-radius: 5px;
+  cursor: pointer;
+  transition: border-color var(--transicao), transform var(--transicao);
+}
+.video-card__capa img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: opacity var(--transicao);
+}
+.video-card__capa:hover { border-color: var(--ouro); transform: translateY(-2px); }
+.video-card__capa:hover img { opacity: .82; }
+
+.video-card__play {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 62px;
+  height: 62px;
+  border-radius: 50%;
+  background: rgba(6, 40, 31, .85);
+  border: 2px solid var(--ouro);
+}
+.video-card__play::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 54%;
+  transform: translate(-50%, -50%);
+  border-style: solid;
+  border-width: 11px 0 11px 18px;
+  border-color: transparent transparent transparent var(--ouro-claro);
+}
+
+.video-card__titulo {
+  font-family: var(--fonte-texto);
+  font-weight: 700;
+  font-size: 1.05rem;
+  color: var(--off-white);
+  margin: 1rem 0 .4rem;
+}
+.video-card__descricao { font-size: .92rem; color: var(--texto-claro-suave); }
+
+/* ---- Janela de vídeo ---- */
+.modal-video {
+  position: fixed;
+  inset: 0;
+  z-index: 150;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.25rem;
+}
+.modal-video[hidden] { display: none; }
+
+.modal-video__fundo {
+  position: absolute;
+  inset: 0;
+  background: rgba(4, 22, 17, .9);
+}
+
+.modal-video__caixa {
+  position: relative;
+  width: 100%;
+  max-width: 920px;
+  background: var(--verde-escuro);
+  border: 1px solid rgba(200, 168, 78, .5);
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.modal-video__topo {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: .9rem 1.1rem;
+  border-bottom: 1px solid rgba(200, 168, 78, .25);
+}
+.modal-video__titulo {
+  font-family: var(--fonte-texto);
+  font-size: .95rem;
+  font-weight: 700;
+  color: var(--off-white);
+  margin: 0;
+}
+.modal-video__fechar {
+  background: none;
+  border: none;
+  color: var(--ouro-claro);
+  font-size: 1.9rem;
+  line-height: 1;
+  padding: 0 .35rem;
+  cursor: pointer;
+}
+.modal-video__fechar:hover { color: var(--off-white); }
+
+.modal-video__quadro {
+  aspect-ratio: 16 / 9;
+  background: #000;
+}
+.modal-video__quadro iframe { width: 100%; height: 100%; border: 0; display: block; }
+
 .sobre__nome {
   font-family: var(--fonte-titulo);
   font-size: 1.5rem;
@@ -1865,6 +2093,7 @@ textarea:focus-visible {
   .caminho      { grid-template-columns: repeat(3, 1fr); }
   .matricula-notas { grid-template-columns: repeat(3, 1fr); }
   .profissionais   { grid-template-columns: repeat(2, 1fr); }
+  .videos          { grid-template-columns: repeat(2, 1fr); }
   .numeros      { grid-template-columns: repeat(2, 1fr); }
   .pilares__grade { grid-template-columns: repeat(2, 1fr); }
   .perfis       { grid-template-columns: repeat(2, 1fr); }
@@ -1912,6 +2141,7 @@ textarea:focus-visible {
   .internacional__grade { grid-template-columns: repeat(4, 1fr); }
   .situacoes  { grid-template-columns: repeat(3, 1fr); }
   .profissionais { grid-template-columns: repeat(4, 1fr); }
+  .videos        { grid-template-columns: repeat(3, 1fr); }
   .numeros  { grid-template-columns: repeat(4, 1fr); }
   .pilares__grade { grid-template-columns: repeat(4, 1fr); }
   .perfis   { grid-template-columns: repeat(4, 1fr); }
@@ -1934,4 +2164,169 @@ textarea:focus-visible {
 /* ---- Telas grandes ---- */
 @media (min-width: 1400px) {
   :root { --largura-max: 1280px; }
+}
+
+
+/* ==========================================================================
+   13. REFINAMENTOS  (bloco adicionado em 2026 — tudo aqui sobrescreve o que
+   veio antes; apagar este bloco devolve o site ao estado anterior)
+   --------------------------------------------------------------------------
+   13.1 Compensação óptica da fonte nova
+   13.2 Quebra de linha inteligente
+   13.3 Correção de transbordo horizontal no celular
+   13.4 Cartões com base alinhada
+   13.5 Áreas de toque
+   13.6 Âncoras sob o cabeçalho fixo
+   13.7 Movimento, foco e seleção
+   ========================================================================== */
+
+/* --------------------------------------------------------------------------
+   13.1 COMPENSAÇÃO ÓPTICA
+   EB Garamond tem altura-x menor que Palatino/Georgia: sem ajuste, os títulos
+   pareceriam encolher. Aqui eles voltam ao peso visual de antes.
+   -------------------------------------------------------------------------- */
+:root {
+  --altura-cabecalho: 74px;
+}
+
+.hero__titulo   { font-size: clamp(2.4rem, 7vw, 4.6rem); line-height: 1.06; letter-spacing: -.012em; }
+.titulo-secao   { font-size: clamp(1.85rem, 4.3vw, 2.8rem); line-height: 1.14; letter-spacing: -.008em; }
+.cta-final__titulo { letter-spacing: -.008em; }
+
+/* Números e siglas em versalete/caixa-alta pedem algarismos alinhados —
+   a Garamond entrega algarismos antigos por padrão. */
+.etiqueta,
+.numero__valor,
+.solucao__numero,
+.caminho__numero { font-variant-numeric: lining-nums tabular-nums; }
+
+/* Itálico dourado do título: a Garamond tem um itálico com muito mais
+   personalidade — vale um respiro a mais entre as letras. */
+.hero__titulo em,
+.titulo-secao em { letter-spacing: 0; }
+
+/* --------------------------------------------------------------------------
+   13.2 QUEBRA DE LINHA INTELIGENTE
+   Elimina a "palavra órfã" solta na última linha de títulos e parágrafos —
+   o detalhe que separa página de escritório de página de revista.
+   -------------------------------------------------------------------------- */
+h1, h2, h3,
+.titulo-secao,
+.hero__titulo,
+.cta-final__titulo,
+.solucao__titulo { text-wrap: balance; }
+
+p, li, .subtitulo-secao, .hero__subtitulo { text-wrap: pretty; }
+
+/* --------------------------------------------------------------------------
+   13.3 TRANSBORDO HORIZONTAL NO CELULAR
+   O e-mail é uma palavra única de 27 caracteres: em telas estreitas ele
+   empurrava a grade de contato para fora da tela (a página inteira ficava
+   9px mais larga que o aparelho e "balançava" na horizontal).
+   -------------------------------------------------------------------------- */
+.contato > *,
+.rodape__interno > * { min-width: 0; }
+
+.contato__dados a,
+.rodape__contato a,
+#linkEmail,
+#rodapeEmail { overflow-wrap: anywhere; }
+
+/* --------------------------------------------------------------------------
+   13.4 CARTÕES COM BASE ALINHADA
+   Os textos têm comprimentos diferentes; os botões não podem ter alturas
+   diferentes. A chamada de cada cartão passa a ancorar no rodapé do cartão.
+   -------------------------------------------------------------------------- */
+.solucao__link { margin-top: auto; padding-top: 1.5rem; }
+
+/* --------------------------------------------------------------------------
+   13.5 ÁREAS DE TOQUE
+   Links de menu e de rodapé precisam de pelo menos ~44px de altura útil
+   para não exigir precisão de cirurgião no celular.
+   -------------------------------------------------------------------------- */
+@media (max-width: 960px) {
+  .rodape__nav a,
+  .rodape__contato a,
+  .contato__dados a,
+  .nav a {
+    display: inline-block;
+    padding-block: .45rem;
+    min-height: 44px;
+  }
+
+  .marca { min-height: 44px; }
+
+  /* Chamadas dos cartões da página de imóvel urbano */
+  .situacao a,
+  .cta-final__alternativa a {
+    display: inline-block;
+    padding-block: .5rem;
+    min-height: 44px;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   13.6 ÂNCORAS SOB O CABEÇALHO FIXO
+   O cabeçalho é sticky: sem esta folga, clicar no menu deixava o título da
+   seção escondido atrás dele.
+   -------------------------------------------------------------------------- */
+.secao,
+[id] { scroll-margin-top: calc(var(--altura-cabecalho) + 1.5rem); }
+
+/* --------------------------------------------------------------------------
+   13.7 MOVIMENTO, FOCO E SELEÇÃO
+   -------------------------------------------------------------------------- */
+/* Rolagem suave só para quem não pediu menos movimento no sistema. */
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+}
+
+/* Anel de foco visível tanto no verde quanto no claro. */
+.botao:focus-visible,
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+  outline: 2px solid var(--ouro-claro);
+  outline-offset: 3px;
+  border-radius: 2px;
+}
+
+::selection { background: rgba(200, 168, 78, .32); color: inherit; }
+
+:root { color-scheme: light; }
+
+/* --------------------------------------------------------------------------
+   13.8 O ATRIBUTO hidden PRECISA VALER MAIS QUE O LAYOUT
+   Linhas de contato vazias (telefone fixo, endereço, horário) vinham marcadas
+   com hidden pelo config.js, mas o `display: flex` da lista vencia a disputa
+   e elas apareciam na página como rótulos órfãos — "TELEFONE" sem telefone.
+   -------------------------------------------------------------------------- */
+[hidden] { display: none !important; }
+
+/* --------------------------------------------------------------------------
+   13.9 LOGOTIPO DO RODAPÉ
+   O arquivo original é escuro sobre fundo branco, e por isso vinha dentro de
+   uma "plaquinha" clara que quebrava o rodapé verde. Agora existe uma versão
+   clara de fundo transparente (assets/logo/logo-claro.png): a marca respira
+   direto sobre o verde, sem moldura.
+   -------------------------------------------------------------------------- */
+.rodape__logo {
+  background: none;
+  padding: 0;
+  width: 215px;
+  margin-bottom: 1.4rem;
+}
+
+/* --------------------------------------------------------------------------
+   13.10 ESPAÇO PARA O BOTÃO FLUTUANTE
+   O botão de WhatsApp é fixo no canto inferior direito e cobria a última
+   linha do rodapé (justamente o aviso de conformidade com o Código de Ética
+   da OAB). O rodapé passa a reservar essa faixa.
+   -------------------------------------------------------------------------- */
+.rodape__base { padding-bottom: 5rem; }
+
+@media (min-width: 961px) {
+  .rodape__base-interno { padding-right: 17rem; }
 }

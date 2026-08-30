@@ -62,6 +62,34 @@ window.SITE_CONFIG = {
   },
 
   /* ---------------------------------------------------------------------
+     2-C. VÍDEOS
+     ---------------------------------------------------------------------
+     Enquanto estiver vazio, NADA de vídeo aparece no site: nem o botão no
+     topo, nem a seção de vídeos. Assim o site nunca mostra player quebrado.
+
+     Para publicar um vídeo:
+       1. Suba o vídeo no YouTube (pode ficar "não listado" se preferir).
+       2. Copie só o CÓDIGO do endereço, não o endereço inteiro.
+          Ex.: em  https://www.youtube.com/watch?v=AbC123xyz
+               o código é          AbC123xyz
+       3. Cole abaixo entre as aspas.
+     --------------------------------------------------------------------- */
+  videos: {
+    // Vídeo de apresentação — abre em uma janela sobre o site, a partir do
+    // botão "Ver vídeo de apresentação" no topo.
+    apresentacao: {
+      youtubeId: '',                    // ex.: 'AbC123xyz'
+      titulo: 'Vídeo de apresentação',
+    },
+
+    // Demais vídeos — aparecem na seção "Vídeos".
+    // Acrescente quantos quiser, seguindo o mesmo formato.
+    // Ex.: { youtubeId: 'AbC123xyz', titulo: 'Como funciona a auditoria',
+    //        descricao: 'Resumo em 3 minutos.' },
+    galeria: [],
+  },
+
+  /* ---------------------------------------------------------------------
      3. REDES SOCIAIS
      Deixe vazio o que ainda não existir — o ícone não será exibido.
      --------------------------------------------------------------------- */

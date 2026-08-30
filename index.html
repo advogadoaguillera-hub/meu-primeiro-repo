@@ -22,6 +22,9 @@
 <link rel="icon" href="favicon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="assets/logo/apple-touch-icon.png">
 <link rel="manifest" href="site.webmanifest">
+<link rel="preload" as="font" type="font/woff2" href="assets/fonts/libre-franklin-400.woff2" crossorigin>
+<link rel="preload" as="font" type="font/woff2" href="assets/fonts/eb-garamond-600.woff2" crossorigin>
+<link rel="preload" as="font" type="font/woff2" href="assets/fonts/eb-garamond-600-italic.woff2" crossorigin>
 <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
@@ -173,8 +176,13 @@
       você pagar.
     </p>
     <div class="hero__acoes">
+      <!-- Botão de vídeo: aparece sozinho assim que houver um vídeo em config.js -->
+      <button class="botao botao--contorno botao--pilula botao--play" id="abrirVideoHero" type="button" hidden>
+        <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M8 5v14l11-7z" fill="currentColor"/></svg>
+        Ver vídeo de apresentação
+      </button>
       <a class="botao botao--ouro botao--pilula" href="#contato">Falar com o advogado</a>
-      <a class="botao botao--contorno botao--pilula" href="#caminho">Entender como funciona</a>
+      <a class="botao botao--contorno botao--pilula" href="#caminho">Entrar no site</a>
     </div>
   </div>
 
@@ -1235,25 +1243,39 @@
 </section>
 
 <!-- ====================================================================
+     12-B. VÍDEOS
+     Some do site enquanto não houver vídeo em config.js.
+     ==================================================================== -->
+<section class="secao secao--escuro" id="videos" hidden>
+  <div class="container">
+    <div class="secao__cabecalho secao__cabecalho--centro">
+      <span class="etiqueta etiqueta--ouro">Vídeos</span>
+      <h2 class="titulo-secao titulo-secao--claro titulo-forte">Explicado em vídeo</h2>
+      <p class="subtitulo-secao">
+        Os mesmos assuntos do site, contados em poucos minutos.
+      </p>
+    </div>
+
+    <div class="videos" id="listaVideos"></div>
+  </div>
+</section>
+
+<!-- ====================================================================
      13. SOBRE JOCSAN
      ==================================================================== -->
 <section class="secao secao--pedra" id="sobre">
   <div class="container sobre">
 
     <div class="sobre__retrato">
-      <!-- ESPAÇO PARA FOTOGRAFIA PROFISSIONAL
-           >>> Adicione o arquivo em assets/img/jocsan-aguillera.webp e
-           substitua o bloco abaixo por:
-           <img src="assets/img/jocsan-aguillera.webp"
-                alt="Jocsan Aguillera, advogado" width="480" height="600" loading="lazy">
-      -->
-      <div class="retrato-vazio">
-        <svg viewBox="0 0 80 80" aria-hidden="true" focusable="false">
-          <circle cx="40" cy="30" r="15" fill="none" stroke="currentColor" stroke-width="1.5"/>
-          <path d="M12 72 c0-16 12-26 28-26 s28 10 28 26" fill="none" stroke="currentColor" stroke-width="1.5"/>
-        </svg>
-        <span>Espaço reservado para fotografia profissional</span>
-      </div>
+      <figure class="retrato">
+        <img src="assets/img/jocsan-aguillera.jpg"
+             alt="Jocsan Aguillera, advogado, em seu escritório em Corumbá"
+             width="800" height="1000" loading="lazy" decoding="async">
+        <figcaption>
+          <strong>Jocsan Aguillera</strong>
+          <span>OAB/MS nº 18.115 · Corumbá — MS</span>
+        </figcaption>
+      </figure>
     </div>
 
     <div class="sobre__texto">
@@ -1445,9 +1467,9 @@
 
     <div class="rodape__marca">
       <img class="rodape__logo"
-           src="assets/logo/logo-jocsan-aguillera.png"
+           src="assets/logo/logo-claro.png"
            alt="Jocsan Aguillera — Advocacia"
-           width="220" height="88" loading="lazy" decoding="async">
+           width="425" height="187" loading="lazy" decoding="async">
       <p class="rodape__descritor">Advocacia da Terra</p>
       <p class="rodape__areas">Direito Imobiliário | Fundiário | Patrimonial</p>
       <p class="rodape__local">Corumbá — Mato Grosso do Sul</p>
@@ -1503,6 +1525,22 @@
     </div>
   </div>
 </footer>
+
+<!-- ====================================================================
+     JANELA DE VÍDEO
+     O player do YouTube só é carregado quando o visitante clica em assistir.
+     Antes disso, nenhum recurso externo é requisitado.
+     ==================================================================== -->
+<div class="modal-video" id="modalVideo" hidden>
+  <div class="modal-video__fundo" data-fechar-video></div>
+  <div class="modal-video__caixa" role="dialog" aria-modal="true" aria-labelledby="tituloModalVideo">
+    <div class="modal-video__topo">
+      <h2 class="modal-video__titulo" id="tituloModalVideo">Vídeo de apresentação</h2>
+      <button class="modal-video__fechar" type="button" data-fechar-video aria-label="Fechar vídeo">&times;</button>
+    </div>
+    <div class="modal-video__quadro" id="quadroVideo"></div>
+  </div>
+</div>
 
 <!-- Botão flutuante de WhatsApp -->
 <a class="whatsapp-flutuante" id="whatsappFlutuante"

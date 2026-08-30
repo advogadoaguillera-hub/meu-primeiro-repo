@@ -293,6 +293,125 @@
   }
 
   /* ----------------------------------------------------------------------
+     3-B. VÍDEOS
+     Nada aparece enquanto não houver vídeo configurado. O player do YouTube
+     só é criado no momento em que o visitante pede para assistir — antes
+     disso o site não requisita nada externo.
+     ---------------------------------------------------------------------- */
+  function iniciarVideos() {
+    var cfgVideos = cfg.videos || {};
+    var apresentacao = cfgVideos.apresentacao || {};
+    var galeria = Array.isArray(cfgVideos.galeria) ? cfgVideos.galeria : [];
+
+    var modal = $('#modalVideo');
+    var quadro = $('#quadroVideo');
+    var tituloModal = $('#tituloModalVideo');
+    var ultimoFoco = null;
+
+    function montarPlayer(id, titulo) {
+      if (!quadro) return;
+      var iframe = document.createElement('iframe');
+      iframe.src = 'https://www.youtube-nocookie.com/embed/' +
+        encodeURIComponent(id) + '?autoplay=1&rel=0';
+      iframe.title = titulo || 'Vídeo';
+      iframe.allow = 'accelerometer; autoplay; clipboard-write; encrypted-media; picture-in-picture';
+      iframe.allowFullscreen = true;
+      iframe.setAttribute('frameborder', '0');
+      quadro.innerHTML = '';
+      quadro.appendChild(iframe);
+    }
+
+    function abrir(id, titulo) {
+      if (!modal) return;
+      ultimoFoco = document.activeElement;
+      if (tituloModal && titulo) tituloModal.textContent = titulo;
+      montarPlayer(id, titulo);
+      modal.hidden = false;
+      document.body.style.overflow = 'hidden';
+      var fechar = modal.querySelector('.modal-video__fechar');
+      if (fechar) fechar.focus();
+    }
+
+    function fechar() {
+      if (!modal) return;
+      modal.hidden = true;
+      if (quadro) quadro.innerHTML = '';   // interrompe a reprodução
+      document.body.style.overflow = '';
+      if (ultimoFoco && ultimoFoco.focus) ultimoFoco.focus();
+    }
+
+    if (modal) {
+      $$('[data-fechar-video]').forEach(function (el) {
+        el.addEventListener('click', fechar);
+      });
+      document.addEventListener('keydown', function (evento) {
+        if (evento.key === 'Escape' && !modal.hidden) fechar();
+      });
+    }
+
+    // --- Botão no topo ---
+    var botaoHero = $('#abrirVideoHero');
+    if (botaoHero && preenchido(apresentacao.youtubeId)) {
+      botaoHero.hidden = false;
+      botaoHero.addEventListener('click', function () {
+        abrir(apresentacao.youtubeId, apresentacao.titulo || 'Vídeo de apresentação');
+      });
+    }
+
+    // --- Seção de vídeos ---
+    var secao = $('#videos');
+    var lista = $('#listaVideos');
+    var validos = galeria.filter(function (v) { return v && preenchido(v.youtubeId); });
+
+    if (secao && lista && validos.length) {
+      validos.forEach(function (v) {
+        var titulo = v.titulo || 'Vídeo';
+
+        var card = document.createElement('article');
+        card.className = 'video-card';
+
+        var botao = document.createElement('button');
+        botao.type = 'button';
+        botao.className = 'video-card__capa';
+        botao.setAttribute('aria-label', 'Assistir: ' + titulo);
+
+        // Miniatura vem do próprio YouTube, carregada só quando entra na tela
+        var capa = document.createElement('img');
+        capa.src = 'https://i.ytimg.com/vi/' + encodeURIComponent(v.youtubeId) + '/hqdefault.jpg';
+        capa.alt = '';
+        capa.loading = 'lazy';
+        capa.decoding = 'async';
+        botao.appendChild(capa);
+
+        var play = document.createElement('span');
+        play.className = 'video-card__play';
+        play.setAttribute('aria-hidden', 'true');
+        botao.appendChild(play);
+
+        botao.addEventListener('click', function () { abrir(v.youtubeId, titulo); });
+
+        var h3 = document.createElement('h3');
+        h3.className = 'video-card__titulo';
+        h3.textContent = titulo;
+
+        card.appendChild(botao);
+        card.appendChild(h3);
+
+        if (preenchido(v.descricao)) {
+          var p = document.createElement('p');
+          p.className = 'video-card__descricao';
+          p.textContent = v.descricao;
+          card.appendChild(p);
+        }
+
+        lista.appendChild(card);
+      });
+
+      secao.hidden = false;
+    }
+  }
+
+  /* ----------------------------------------------------------------------
      4. ANO NO RODAPÉ
      ---------------------------------------------------------------------- */
   function iniciarAno() {
@@ -359,6 +478,7 @@
   function iniciar() {
     aplicarConfiguracao();
     iniciarMenu();
+    iniciarVideos();
     iniciarFormulario();
     iniciarAno();
     iniciarRevelacao();
