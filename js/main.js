@@ -68,6 +68,14 @@
       if (flutuanteOculto) flutuanteOculto.hidden = true;
     }
 
+    // --- Botões com mensagem própria (landing pages) ---
+    // <a data-whatsapp-msg="texto"> recebe o link com o número do config.js
+    if (temWhatsapp) {
+      $$('[data-whatsapp-msg]').forEach(function (el) {
+        el.href = montarLinkWhatsapp(el.getAttribute('data-whatsapp-msg'));
+      });
+    }
+
     // --- E-mail ---
     var temEmail = preenchido(contato.email);
     alternarLinha('email', temEmail);
