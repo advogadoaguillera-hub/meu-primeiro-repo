@@ -244,7 +244,11 @@ test('auditoria registra as ações', async () => {
 
 test('troca de senha', async () => {
   assert.equal((await maria('POST', '/api/eu/senha', { atual: 'errada', nova: 'nova-senha-1' })).status, 403);
+  const outroAparelho = sessao();
+  await outroAparelho('POST', '/api/entrar', { email: 'maria@teste.br', senha: '12345678' });
   assert.equal((await maria('POST', '/api/eu/senha', { atual: '12345678', nova: 'nova-senha-1' })).status, 200);
+  assert.equal((await outroAparelho('GET', '/api/cliente/inicio')).status, 401, 'outros aparelhos saem');
+  assert.equal((await maria('GET', '/api/cliente/inicio')).status, 200, 'aparelho atual continua');
   assert.equal((await sessao()('POST', '/api/entrar', { email: 'maria@teste.br', senha: 'nova-senha-1' })).status, 200);
 });
 
@@ -285,6 +289,37 @@ test('conversão de valores em reais', () => {
   assert.equal(centavos('R$ 99,90'), 9990);
   assert.equal(centavos(10.5), 1050);
   assert.throws(() => centavos('abc'));
+});
+
+test('cliente não vê as observações internas sobre ele', async () => {
+  assert.equal((await gestor('PATCH', `/api/escritorio/clientes/${ids.maria}`, { observacoes: 'Cliente difícil, cobrar adiantado' })).status, 200);
+  assert.equal((await gestor('PATCH', `/api/escritorio/clientes/${ids.maria}`, { nome: '  ' })).status, 400, 'nome vazio é recusado sem erro 500');
+  const eu = await maria('GET', '/api/eu');
+  assert.equal(eu.dados.usuario.observacoes, undefined);
+  const entrou = await sessao()('POST', '/api/entrar', { email: 'maria@teste.br', senha: 'nova-senha-1' });
+  assert.equal(entrou.dados.usuario.observacoes, undefined);
+  assert.equal((await maria('PATCH', '/api/eu', { telefone: '67988887777' })).dados.usuario.observacoes, undefined);
+  assert.equal((await gestor('GET', `/api/escritorio/clientes/${ids.maria}`)).dados.cliente.observacoes, 'Cliente difícil, cobrar adiantado');
+});
+
+test('cobrança: valor numérico negativo, parcelas demais e link perigoso são recusados', async () => {
+  assert.throws(() => centavos(-100));
+  assert.throws(() => centavos(0.001));
+  const base = { cliente_id: ids.maria, descricao: 'x', vencimento: '2026-12-01' };
+  assert.equal((await gestor('POST', '/api/escritorio/cobrancas', { ...base, valor: -100 })).status, 400);
+  assert.equal((await gestor('POST', '/api/escritorio/cobrancas', { ...base, valor: '0,05', parcelas: 10 })).status, 400);
+  assert.equal((await gestor('POST', '/api/escritorio/cobrancas', { ...base, valor: '100', link_pagamento: 'javascript:alert(1)' })).status, 400);
+  const ok = await gestor('POST', '/api/escritorio/cobrancas', { ...base, valor: '100', link_pagamento: 'https://pag.exemplo/abc' });
+  assert.equal(ok.status, 201);
+  assert.equal((await gestor('PATCH', `/api/escritorio/cobrancas/${ok.dados[0].id}`, { link_pagamento: 'javascript:alert(1)' })).status, 400);
+});
+
+test('documento com situação inválida dá 400, não erro interno', async () => {
+  const fd = new FormData();
+  fd.append('tipo', 'contrato');
+  fd.append('status', 'qualquer');
+  fd.append('arquivo', new Blob(['%PDF-1.4'], { type: 'application/pdf' }), 'c.pdf');
+  assert.equal((await gestor('POST', `/api/escritorio/clientes/${ids.maria}/documentos`, fd)).status, 400);
 });
 
 test('telas: qualquer rota fora da API devolve o aplicativo', async () => {

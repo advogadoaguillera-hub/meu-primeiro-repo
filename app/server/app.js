@@ -36,7 +36,9 @@ export function criarApp() {
   mkdirSync(PASTA_ARQUIVOS, { recursive: true });
   const app = express();
   app.disable('x-powered-by');
-  app.set('trust proxy', 1);
+  // Só confie no IP repassado se houver proxy de verdade na frente (Render, Railway, Caddy…);
+  // sem proxy, um X-Forwarded-For falso burlaria o limite de tentativas de login.
+  if (process.env.TRUST_PROXY) app.set('trust proxy', Number(process.env.TRUST_PROXY) || process.env.TRUST_PROXY);
 
   app.use((_req, res, next) => {
     res.setHeader('X-Content-Type-Options', 'nosniff');
@@ -97,7 +99,7 @@ export function criarApp() {
   });
 
   api.get('/eu', (req, res) => {
-    res.json({ usuario: req.usuario ? n.buscarUsuario(req.usuario.id) : null });
+    res.json({ usuario: req.usuario ? n.buscarProprio(req.usuario.id) : null });
   });
 
   // ------------------------------------------------------------ conta (qualquer pessoa logada)
@@ -108,7 +110,7 @@ export function criarApp() {
   }));
 
   api.post('/eu/senha', r((req, res) => {
-    auth.trocarSenha(req.usuario.id, req.body?.atual, req.body?.nova);
+    auth.trocarSenha(req.usuario.id, req.body?.atual, req.body?.nova, req.token);
     res.json({ ok: true });
   }));
 

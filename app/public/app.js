@@ -20,7 +20,11 @@ const quando = (iso) => {
   const hora = dt.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
   return dt.toDateString() === hojeStr ? `hoje, ${hora}` : `${dt.toLocaleDateString('pt-BR')} ${hora}`;
 };
-const hojeIso = () => new Date().toISOString().slice(0, 10);
+// Data local do aparelho (toISOString daria o dia seguinte depois das 21h no Brasil).
+const hojeIso = () => {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+};
 const primeiroNome = (nome) => String(nome || '').split(' ')[0];
 
 class ErroApi extends Error {
@@ -362,6 +366,8 @@ async function telaPerfil(c) {
   });
   $('#sair', c).addEventListener('click', async () => {
     await api('POST', '/sair');
+    // A conversa com o Claude tem dados de clientes: não fica para o próximo usuário do aparelho.
+    try { sessionStorage.removeItem('aguillera-assistente'); } catch { /* sem armazenamento */ }
     estado.usuario = null;
     navegar('#/entrar');
   });
@@ -867,8 +873,10 @@ async function escProcesso(c, id) {
     const li = b.closest('[data-andamento]');
     const a = p.andamentos.find((x) => String(x.id) === li.dataset.andamento);
     if (b.dataset.acao === 'visibilidade') {
-      await api('PATCH', `/escritorio/andamentos/${a.id}`, { visivel_cliente: !a.visivel_cliente });
-      return rotear();
+      try {
+        await api('PATCH', `/escritorio/andamentos/${a.id}`, { visivel_cliente: !a.visivel_cliente });
+        return rotear();
+      } catch (err) { return avisar(err.message, 'erro'); }
     }
     abrirModal('Explicação para o cliente', `<form><p class="suave pequeno">${e(a.descricao)}</p>
       <div class="campo"><label>O que significa</label><textarea name="explicacao" rows="4">${e(a.explicacao || '')}</textarea></div>

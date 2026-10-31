@@ -71,6 +71,8 @@ export async function conversarComAssistente(usuario, historico) {
     .filter((m) => m && typeof m.texto === 'string' && m.texto.trim())
     .slice(-30)
     .map((m) => ({ role: m.papel === 'assistente' ? 'assistant' : 'user', content: m.texto.slice(0, 20_000) }));
+  // A conversa enviada ao Claude começa sempre por um pedido da pessoa.
+  while (mensagens.length && mensagens[0].role !== 'user') mensagens.shift();
   if (!mensagens.length || mensagens.at(-1).role !== 'user') throw new n.ErroDeRegra('Escreva o seu pedido.');
 
   const final = await api().beta.messages.toolRunner({

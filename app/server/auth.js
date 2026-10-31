@@ -3,7 +3,7 @@
 
 import { randomBytes, scryptSync, timingSafeEqual, createHash } from 'node:crypto';
 import { abrirBanco } from './db.js';
-import { ErroDeRegra, registrar, buscarUsuario } from './nucleo.js';
+import { ErroDeRegra, registrar, buscarUsuario, buscarProprio } from './nucleo.js';
 
 const db = () => abrirBanco();
 const COOKIE = 'aguillera_sessao';
@@ -55,11 +55,13 @@ export function criarUsuario({ nome, email, senha, papel, telefone, cpf, enderec
   return buscarUsuario(id);
 }
 
-export function trocarSenha(usuarioId, atual, nova) {
+// Ao trocar a senha, os outros aparelhos saem; o atual continua conectado.
+export function trocarSenha(usuarioId, atual, nova, tokenAtual) {
   const u = db().prepare('SELECT senha_hash FROM usuarios WHERE id = ?').get(usuarioId);
   if (!u || !conferirSenha(atual, u.senha_hash)) throw new ErroDeRegra('Senha atual incorreta.', 403);
   validarSenha(nova);
   db().prepare('UPDATE usuarios SET senha_hash = ? WHERE id = ?').run(gerarHash(nova), usuarioId);
+  db().prepare('DELETE FROM sessoes WHERE usuario_id = ? AND token_hash != ?').run(usuarioId, tokenAtual ? sha(tokenAtual) : '');
   registrar(usuarioId, 'senha.trocada');
 }
 
@@ -96,7 +98,7 @@ export function entrar(email, senha, ip) {
   db().prepare('INSERT INTO sessoes (token_hash, usuario_id, expira_em) VALUES (?, ?, ?)').run(sha(token), u.id, expira);
   db().prepare("UPDATE usuarios SET ultimo_acesso = datetime('now') WHERE id = ?").run(u.id);
   db().prepare("DELETE FROM sessoes WHERE expira_em < ?").run(new Date().toISOString());
-  return { token, usuario: buscarUsuario(u.id) };
+  return { token, usuario: buscarProprio(u.id) };
 }
 
 export function sair(token) {

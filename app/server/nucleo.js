@@ -14,7 +14,12 @@ export class ErroDeRegra extends Error {
   }
 }
 
-export const hoje = () => new Date().toISOString().slice(0, 10);
+// Data local do servidor (fuso do escritório), não a de Greenwich: depois das 21h
+// em Brasília o UTC já é o dia seguinte e a cobrança do dia apareceria atrasada.
+export const hoje = () => {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+};
 
 // ---------------------------------------------------------------- auditoria
 export function registrar(usuarioId, acao, detalhe, origem = 'app') {
@@ -29,6 +34,14 @@ export function buscarUsuario(id) {
   return db().prepare(`SELECT ${CAMPOS_PUBLICOS} FROM usuarios WHERE id = ?`).get(id);
 }
 
+// O próprio usuário não vê as observações internas que o escritório guarda sobre ele.
+export function buscarProprio(id) {
+  const u = buscarUsuario(id);
+  if (!u) return u;
+  const { observacoes: _interno, ...proprio } = u;
+  return proprio;
+}
+
 export function exigirCliente(id) {
   const c = db().prepare(`SELECT ${CAMPOS_PUBLICOS} FROM usuarios WHERE id = ? AND papel = 'cliente'`).get(id);
   if (!c) throw new ErroDeRegra('Cliente não encontrado.', 404);
@@ -41,7 +54,7 @@ export function listarClientes({ busca = '', situacao = 'todos' } = {}) {
     SELECT u.id, u.nome, u.email, u.telefone, u.area_interesse, u.ativo, u.criado_em, u.ultimo_acesso,
       (SELECT COUNT(*) FROM processos p WHERE p.cliente_id = u.id AND p.status = 'ativo') AS processos_ativos,
       (SELECT COALESCE(SUM(valor_centavos),0) FROM cobrancas c
-         WHERE c.cliente_id = u.id AND c.status = 'aberta' AND c.vencimento < date('now')) AS em_atraso_centavos,
+         WHERE c.cliente_id = u.id AND c.status = 'aberta' AND c.vencimento < date('now','localtime')) AS em_atraso_centavos,
       (SELECT COALESCE(SUM(valor_centavos),0) FROM cobrancas c
          WHERE c.cliente_id = u.id AND c.status = 'paga') AS pago_centavos,
       (SELECT COUNT(*) FROM mensagens m WHERE m.cliente_id = u.id AND m.do_escritorio = 0 AND m.lida = 0) AS mensagens_nao_lidas
@@ -64,6 +77,7 @@ export function atualizarCliente(id, dados, autorId, origem) {
   const permitidos = ['nome', 'telefone', 'cpf', 'endereco', 'area_interesse', 'observacoes'];
   const campos = permitidos.filter((k) => dados[k] !== undefined);
   if (!campos.length) return buscarUsuario(id);
+  if (campos.includes('nome') && !String(dados.nome).trim()) throw new ErroDeRegra('Informe o nome.');
   db().prepare(`UPDATE usuarios SET ${campos.map((k) => `${k} = ?`).join(', ')} WHERE id = ?`)
     .run(...campos.map((k) => (dados[k] === '' ? null : String(dados[k]))), id);
   registrar(autorId, 'cliente.atualizado', { id, campos }, origem);
@@ -79,7 +93,7 @@ export function atualizarProprioPerfil(usuario, dados) {
     db().prepare(`UPDATE usuarios SET ${campos.map((k) => `${k} = ?`).join(', ')} WHERE id = ?`)
       .run(...campos.map((k) => String(dados[k]).trim().slice(0, 300) || null), usuario.id);
   }
-  return buscarUsuario(usuario.id);
+  return buscarProprio(usuario.id);
 }
 
 export function definirAtivo(id, ativo, autorId, origem) {
@@ -261,6 +275,7 @@ export function buscarDocumento(id) {
 export function criarDocumento(dados, autorId) {
   exigirCliente(dados.cliente_id);
   if (!TIPOS_DOCUMENTO[dados.tipo]) throw new ErroDeRegra('Tipo de documento inválido.');
+  if (dados.status && !['disponivel', 'aguardando_assinatura', 'assinado'].includes(dados.status)) throw new ErroDeRegra('Situação inválida.');
   const r = db().prepare(`
     INSERT INTO documentos (cliente_id, processo_id, tipo, titulo, arquivo, nome_original, mime, tamanho, enviado_por, status)
     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`).run(
@@ -299,12 +314,23 @@ export function listarCobrancas({ clienteId, situacao } = {}) {
 
 export function centavos(valor) {
   // Aceita 1500, "1500", "1.500,00", "1500.50".
-  if (typeof valor === 'number') return Math.round(valor * 100);
-  const s = String(valor ?? '').trim().replace(/[R$\s]/g, '');
-  const normal = s.includes(',') ? s.replace(/\./g, '').replace(',', '.') : s;
-  const n = Number(normal);
-  if (!Number.isFinite(n) || n <= 0) throw new ErroDeRegra('Valor inválido.');
-  return Math.round(n * 100);
+  let n = valor;
+  if (typeof valor !== 'number') {
+    const s = String(valor ?? '').trim().replace(/[R$\s]/g, '');
+    n = Number(s.includes(',') ? s.replace(/\./g, '').replace(',', '.') : s);
+  }
+  // Número também passa pela checagem: -100 ou 0,001 não viram cobrança.
+  const c = Math.round(n * 100);
+  if (!Number.isFinite(c) || c <= 0) throw new ErroDeRegra('Valor inválido.');
+  return c;
+}
+
+// Link de pagamento só http(s): um "javascript:" viraria script no portal do cliente.
+function linkSeguro(link) {
+  if (!link) return null;
+  const t = String(link).trim();
+  if (!/^https?:\/\/\S+$/i.test(t)) throw new ErroDeRegra('Link de pagamento inválido (use https://…).');
+  return t.slice(0, 1000);
 }
 
 // Cria uma cobrança ou um parcelamento (parcelas mensais a partir do 1º vencimento).
@@ -316,6 +342,8 @@ export function criarCobrancas({ cliente_id, descricao, valor, vencimento, parce
   if (n < 1 || n > 60) throw new ErroDeRegra('Parcelas: de 1 a 60.');
   const total = centavos(valor);
   const base = Math.floor(total / n);
+  if (base < 1) throw new ErroDeRegra('Valor pequeno demais para tantas parcelas.');
+  const link = linkSeguro(link_pagamento);
   const resto = total - base * n;
   const [a, m, d] = vencimento.split('-').map(Number);
 
@@ -328,7 +356,7 @@ export function criarCobrancas({ cliente_id, descricao, valor, vencimento, parce
       const ultimo = new Date(Date.UTC(a, m - 1 + i + 1, 0)).getUTCDate();
       const data = new Date(Date.UTC(a, m - 1 + i, Math.min(d, ultimo))).toISOString().slice(0, 10);
       const rotulo = n > 1 ? `${descricao.trim()} — parcela ${i + 1}/${n}` : descricao.trim();
-      const r = ins.run(cliente_id, processo_id || null, rotulo, base + (i === 0 ? resto : 0), data, link_pagamento || null);
+      const r = ins.run(cliente_id, processo_id || null, rotulo, base + (i === 0 ? resto : 0), data, link);
       criados.push(Number(r.lastInsertRowid));
     }
     return criados;
@@ -350,7 +378,7 @@ export function alterarCobranca(id, { status, link_pagamento, pago_em }, autorId
     const quando = status === 'paga' ? (pago_em || hoje()) : null;
     db().prepare('UPDATE cobrancas SET status = ?, pago_em = ? WHERE id = ?').run(status, quando, id);
   }
-  if (link_pagamento !== undefined) db().prepare('UPDATE cobrancas SET link_pagamento = ? WHERE id = ?').run(link_pagamento || null, id);
+  if (link_pagamento !== undefined) db().prepare('UPDATE cobrancas SET link_pagamento = ? WHERE id = ?').run(linkSeguro(link_pagamento), id);
   registrar(autorId, 'cobranca.alterada', { id, de: c.status, para: status }, origem);
   return buscarCobranca(id);
 }
@@ -360,7 +388,7 @@ export function inadimplentes() {
     SELECT u.id AS cliente_id, u.nome, u.telefone, u.email,
       COUNT(c.id) AS parcelas_atrasadas, SUM(c.valor_centavos) AS total_centavos, MIN(c.vencimento) AS desde
     FROM cobrancas c JOIN usuarios u ON u.id = c.cliente_id
-    WHERE c.status = 'aberta' AND c.vencimento < date('now')
+    WHERE c.status = 'aberta' AND c.vencimento < date('now','localtime')
     GROUP BY u.id ORDER BY total_centavos DESC`).all();
 }
 
@@ -402,13 +430,13 @@ export function painel() {
     processos_ativos: um("SELECT COUNT(*) n FROM processos WHERE status='ativo'").n,
     mensagens_nao_lidas: um('SELECT COUNT(*) n FROM mensagens WHERE do_escritorio=0 AND lida=0').n,
     solicitacoes_novas: um("SELECT COUNT(*) n FROM solicitacoes WHERE status='nova'").n,
-    recebido_mes_centavos: um("SELECT COALESCE(SUM(valor_centavos),0) n FROM cobrancas WHERE status='paga' AND pago_em >= date('now','start of month')").n,
-    a_receber_centavos: um("SELECT COALESCE(SUM(valor_centavos),0) n FROM cobrancas WHERE status='aberta' AND vencimento >= date('now')").n,
-    em_atraso_centavos: um("SELECT COALESCE(SUM(valor_centavos),0) n FROM cobrancas WHERE status='aberta' AND vencimento < date('now')").n,
-    clientes_inadimplentes: um("SELECT COUNT(DISTINCT cliente_id) n FROM cobrancas WHERE status='aberta' AND vencimento < date('now')").n,
+    recebido_mes_centavos: um("SELECT COALESCE(SUM(valor_centavos),0) n FROM cobrancas WHERE status='paga' AND pago_em >= date('now','localtime','start of month')").n,
+    a_receber_centavos: um("SELECT COALESCE(SUM(valor_centavos),0) n FROM cobrancas WHERE status='aberta' AND vencimento >= date('now','localtime')").n,
+    em_atraso_centavos: um("SELECT COALESCE(SUM(valor_centavos),0) n FROM cobrancas WHERE status='aberta' AND vencimento < date('now','localtime')").n,
+    clientes_inadimplentes: um("SELECT COUNT(DISTINCT cliente_id) n FROM cobrancas WHERE status='aberta' AND vencimento < date('now','localtime')").n,
     vencendo_7d: db().prepare(`SELECT c.id, c.descricao, c.valor_centavos, c.vencimento, u.nome AS cliente_nome, c.cliente_id
       FROM cobrancas c JOIN usuarios u ON u.id=c.cliente_id
-      WHERE c.status='aberta' AND c.vencimento BETWEEN date('now') AND date('now','+7 days') ORDER BY c.vencimento LIMIT 10`).all(),
+      WHERE c.status='aberta' AND c.vencimento BETWEEN date('now','localtime') AND date('now','localtime','+7 days') ORDER BY c.vencimento LIMIT 10`).all(),
     entradas_por_mes: db().prepare(`SELECT strftime('%Y-%m', criado_em) AS mes, COUNT(*) AS n FROM usuarios
       WHERE papel='cliente' AND criado_em >= date('now','start of month','-5 months') GROUP BY mes ORDER BY mes`).all(),
     andamentos_recentes: db().prepare(`SELECT a.data, a.descricao, a.origem, p.id AS processo_id, p.titulo, u.nome AS cliente_nome
