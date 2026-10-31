@@ -18,21 +18,8 @@
 > ([`defesa-criminal/README.md`](defesa-criminal/README.md)) e pode ser
 > publicado separadamente.
 >
-> A pasta [`marca-aguillera/`](marca-aguillera/) guarda a **proposta da nova
-> marca** (harpia), ainda em aprovação. Ela não é linkada por nenhuma página e
-> está bloqueada em `robots.txt`. Abra `marca-aguillera/index.html` para ver o
-> manual da marca.
-> Os SVGs são gerados por `marca-aguillera/gerar.py` (requer `pip install
-> fonttools brotli`), que converte o texto em contornos a partir das fontes do
-> repositório.
-
----|---|---|
-> | **Advocacia da Terra** | raiz (`index.html`) | Direito imobiliário, fundiário e patrimonial |
-> | **Defesa Criminal Estratégica** | [`defesa-criminal/`](defesa-criminal/) | Advocacia criminal — drogas, habeas corpus, cannabis medicinal, fraudes, vítimas |
->
-> Cada um tem identidade visual, conteúdo, `config.js` e README próprios, e pode
-> ser publicado separadamente. Este README trata do site **Advocacia da Terra**;
-> para o site criminal, veja [`defesa-criminal/README.md`](defesa-criminal/README.md).
+> Este README trata do site **Advocacia da Terra** e das áreas que usam a
+> mesma base.
 
 ---
 
@@ -164,8 +151,6 @@ servidor (normalmente `public_html`).
 ├── empresarial/            Direito empresarial
 ├── defesa-criminal/        Site criminal (README próprio)
 ├── viabilidade/ · lp/      Análise de viabilidade e landing pages imobiliárias
-│
-├── marca-aguillera/        Proposta da marca (harpia): manual + SVGs. Fora do site
 │
 └── assets/
     ├── logo/               Logotipos (ver README interno)

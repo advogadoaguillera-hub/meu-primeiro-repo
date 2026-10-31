@@ -10,8 +10,5 @@ Disallow: /defesa-criminal/_partes/
 Disallow: /defesa-criminal/tools/
 Disallow: /defesa-criminal/artigos/_modelo-artigo.html
 
-# Manual da marca em aprovação — pasta de trabalho, fora do site
-Disallow: /marca-aguillera/
-
 # Substitua pelo domínio definitivo quando ele for registrado.
 # Sitemap: https://SEU-DOMINIO.com.br/sitemap.xml
