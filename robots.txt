@@ -1,5 +1,5 @@
 # Jocsan Aguillera — OAB/MS nº 18.115
-# Advocacia da Terra (raiz) e Defesa Criminal (/defesa-criminal/)
+# Advocacia da Terra (raiz), Defesa Criminal (/defesa-criminal/) e demais áreas
 
 User-agent: *
 Allow: /

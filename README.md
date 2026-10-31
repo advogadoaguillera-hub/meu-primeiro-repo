@@ -1,15 +1,25 @@
 # Advocacia da Terra — Jocsan Aguillera
 
-> **Este repositório contém dois sites independentes:**
+> **Este repositório reúne os sites do escritório, organizados por área:**
 >
-> | Site | Pasta | Posicionamento |
+> | Área | Pasta | Posicionamento |
 > |---|---|---|
+> | **Portal do escritório** | [`escritorio/`](escritorio/) | Missão, visão, valores, método e as seis áreas de atuação |
 > | **Advocacia da Terra** | raiz (`index.html`) | Direito imobiliário, fundiário e patrimonial |
-> | **Defesa Criminal Estratégica** | [`defesa-criminal/`](defesa-criminal/) | Advocacia criminal — drogas, habeas corpus, cannabis medicinal, fraudes, vítimas |
+> | **Imóvel urbano** | [`moradia/`](moradia/) | Cível e imobiliário urbano: compra, financiamento, construtora, locação |
+> | **Defesa Criminal Estratégica** | [`defesa-criminal/`](defesa-criminal/) | Advocacia criminal: drogas, habeas corpus, cannabis medicinal |
+> | **Direito Previdenciário** | [`previdenciario/`](previdenciario/) | INSS, aposentadorias, BPC/LOAS, segurado especial rural, revisões |
+> | **Direito Tributário** | [`tributario/`](tributario/) | Execução fiscal, autos de infração, agro e patrimônio, reforma tributária |
+> | **Direito Empresarial** | [`empresarial/`](empresarial/) | Sociedades, contratos, conflitos societários, crise, holding |
 >
-> Cada um tem identidade visual, conteúdo, `config.js` e README próprios, e pode
-> ser publicado separadamente. Este README trata do site **Advocacia da Terra**;
-> para o site criminal, veja [`defesa-criminal/README.md`](defesa-criminal/README.md).
+> O portal, a raiz e as áreas de imóvel urbano, previdenciário, tributário e
+> empresarial compartilham `config.js`, `css/style.css` e `js/main.js`. O site
+> criminal tem identidade, `config.js` e README próprios
+> ([`defesa-criminal/README.md`](defesa-criminal/README.md)) e pode ser
+> publicado separadamente.
+>
+> Este README trata do site **Advocacia da Terra** e das áreas que usam a
+> mesma base.
 
 ---
 
@@ -133,6 +143,14 @@ servidor (normalmente `public_html`).
 ├── conteudo/
 │   ├── index.html          Índice de publicações
 │   └── _modelo-artigo.html Modelo para criar novos artigos
+│
+├── escritorio/index.html   Portal: missão, visão, valores, método e áreas
+├── moradia/index.html      Imóvel urbano (cível)
+├── previdenciario/         Direito previdenciário
+├── tributario/             Direito tributário
+├── empresarial/            Direito empresarial
+├── defesa-criminal/        Site criminal (README próprio)
+├── viabilidade/ · lp/      Análise de viabilidade e landing pages imobiliárias
 │
 └── assets/
     ├── logo/               Logotipos (ver README interno)
