@@ -3020,3 +3020,61 @@ textarea:focus-visible {
 @media (prefers-reduced-motion: reduce) {
   .jogo__tela { animation: none; }
 }
+
+/* ==========================================================================
+   ÁREAS DO ESCRITÓRIO — portal (escritorio/) e páginas de previdenciário,
+   tributário e empresarial. Reaproveitam os componentes acima; aqui ficam
+   apenas os ajustes próprios.
+   ========================================================================== */
+.faq-area { max-width: 780px; margin-inline: auto; }
+.faq-area .lp-faq summary { font-family: var(--fonte-texto); }
+
+.outras-areas { text-align: center; }
+.outras-areas .assuntos { margin-top: 1.5rem; }
+
+/* Método em quatro tempos (portal do escritório) */
+@media (min-width: 600px) {
+  .momentos--quatro { grid-template-columns: repeat(2, 1fr); }
+}
+@media (min-width: 1000px) {
+  .momentos--quatro { grid-template-columns: repeat(4, 1fr); }
+}
+
+/* Missão e visão — frases de abertura sobre fundo verde */
+.declaracoes {
+  display: grid;
+  gap: 2.5rem;
+  max-width: 980px;
+  margin: 0 auto 3.5rem;
+}
+@media (min-width: 800px) {
+  .declaracoes { grid-template-columns: 1fr 1fr; gap: 3.5rem; }
+}
+.declaracao__rotulo {
+  font-size: .78rem;
+  font-weight: 600;
+  letter-spacing: .2em;
+  text-transform: uppercase;
+  color: var(--ouro);
+  margin-bottom: .9rem;
+  padding-bottom: .9rem;
+  border-bottom: var(--linha-ouro);
+}
+.declaracao__texto {
+  font-family: var(--fonte-titulo);
+  font-size: clamp(1.25rem, 2.4vw, 1.55rem);
+  line-height: 1.45;
+  color: var(--off-white);
+}
+.declaracao__texto em { color: var(--ouro-claro); }
+
+/* Cartões de área no portal */
+.situacao__rotulo {
+  display: block;
+  font-size: .72rem;
+  font-weight: 600;
+  letter-spacing: .18em;
+  text-transform: uppercase;
+  color: var(--ouro-escuro);
+  margin-bottom: .6rem;
+}
