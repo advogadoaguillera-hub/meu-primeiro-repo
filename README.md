@@ -22,6 +22,9 @@
 > marca** (harpia), ainda em aprovação. Ela não é linkada por nenhuma página e
 > está bloqueada em `robots.txt`. Abra `marca-aguillera/index.html` para ver o
 > manual da marca.
+> Os SVGs são gerados por `marca-aguillera/gerar.py` (requer `pip install
+> fonttools brotli`), que converte o texto em contornos a partir das fontes do
+> repositório.
 
 ---|---|---|
 > | **Advocacia da Terra** | raiz (`index.html`) | Direito imobiliário, fundiário e patrimonial |

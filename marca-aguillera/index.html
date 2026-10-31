@@ -34,7 +34,7 @@
   }
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body { background: var(--pena); color: var(--texto); font-family: var(--grotesca); font-size: 16px; line-height: 1.65; }
-  img { display: block; max-width: 100%; }
+  img { display: block; max-width: 100%; height: auto; }
   .env { max-width: 1080px; margin: 0 auto; padding: 0 16px; }
   section { padding: 72px 0; }
   .rotulo { font-size: .74rem; font-weight: 600; letter-spacing: .22em; text-transform: uppercase; color: var(--ouro-escuro); margin-bottom: 14px; }
@@ -45,11 +45,11 @@
   .lead { font-family: var(--serifa); font-size: clamp(1.15rem, 2.2vw, 1.4rem); line-height: 1.5; max-width: 62ch; }
   .suave { color: var(--suave); }
   .grade { display: grid; gap: 24px; }
-  @media (min-width: 760px) { .g2 { grid-template-columns: 1fr 1fr; } .g3 { grid-template-columns: repeat(3, 1fr); } .g4 { grid-template-columns: repeat(4, 1fr); } }
+  @media (min-width: 760px) { .g2 { grid-template-columns: 1fr 1fr; } .g3 { grid-template-columns: repeat(3, 1fr); } .g4 { grid-template-columns: repeat(4, 1fr); } .g5 { grid-template-columns: repeat(5, 1fr); } }
 
   /* capa */
   .capa { background: var(--verde); color: var(--pena); padding: 96px 0 88px; text-align: center; }
-  .capa img { width: min(220px, 55vw); margin: 0 auto 28px; }
+  .capa img { width: min(240px, 60vw); margin: 0 auto 28px; }
   .capa h1 { color: var(--pena); font-size: clamp(2.6rem, 9vw, 5rem); letter-spacing: .16em; }
   .capa .desc { font-weight: 600; letter-spacing: .5em; font-size: .9rem; color: var(--ouro-claro); margin-top: 10px; }
   .capa .mote { font-family: var(--serifa); font-style: italic; font-size: 1.35rem; color: var(--ouro-claro); margin-top: 36px; }
@@ -90,7 +90,7 @@
   .cartao-visita .nome { font-family: var(--serifa); font-size: clamp(1rem, 2.4vw, 1.3rem); letter-spacing: .06em; }
   .cartao-visita .dados { font-size: clamp(.62rem, 1.4vw, .76rem); color: var(--ouro-claro); letter-spacing: .06em; }
   .cartao-visita--verso { background: var(--pena); align-items: center; justify-content: center; }
-  .cartao-visita--verso img { width: 30%; }
+  .cartao-visita--verso img { width: 40%; }
   .timbre { background: #fff; aspect-ratio: 210 / 297; padding: 8%; box-shadow: 0 18px 40px rgba(0,0,0,.12); display: flex; flex-direction: column; }
   .timbre img { width: 52%; margin: 0 auto 10%; }
   .timbre .linha { height: 6px; background: #E8E4D8; margin-bottom: 9px; border-radius: 2px; }
@@ -115,7 +115,7 @@
 <!-- ================= CAPA ================= -->
 <header class="capa">
   <div class="env">
-    <img src="simbolo.svg" alt="Símbolo Aguillera: cabeça de harpia em ouro, de perfil, com o penacho erguido" width="220" height="220">
+    <img src="selo.svg" alt="Selo Aguillera Advocacia: harpia em ouro, de olho verde, dentro de medalha circular" width="240" height="240">
     <h1>AGUILLERA</h1>
     <p class="desc">ADVOCACIA</p>
     <p class="mote">Ver o todo. Alcançar o objetivo. Proteger o que é seu.</p>
@@ -182,11 +182,11 @@
     <div>
       <p class="rotulo">03 · O símbolo</p>
       <h2>Anatomia do símbolo</h2>
-      <p><strong>Penacho em três lâminas.</strong> A marca registrada da harpia. Erguido, forma uma coroa e lembra as três instâncias por onde um caso pode subir.</p>
-      <p><strong>Olhar para a frente.</strong> A sobrancelha pesada dá firmeza; o olho voltado para a direita aponta o futuro, o objetivo.</p>
+      <p><strong>Penacho em três lâminas, com nervuras de gravura.</strong> A marca registrada da harpia. Erguido, forma uma coroa e lembra as três instâncias por onde um caso pode subir. Os fios internos remetem às gravuras em metal dos selos e das cartas antigas.</p>
+      <p><strong>O olho verde.</strong> Único ponto de cor fria no ouro: é para onde o olhar vai primeiro. Verde-esmeralda, o mesmo verde do Pantanal e da marca, com um ponto de luz que dá vida à ave. Voltado para a direita, aponta o futuro, o objetivo. A sobrancelha pesada dá firmeza.</p>
       <p><strong>Bico curvo.</strong> Precisão. A curva é a mesma das serifas da EB Garamond, que dá voz ao nome.</p>
       <p><strong>Colar escuro.</strong> A faixa negra do peito da harpia vira base: firmeza, sobriedade, fundamento.</p>
-      <p class="legenda">Forma única, sem contornos finos: lê-se bem de 16 px (ícone de aba) a fachada.</p>
+      <p class="legenda">Silhueta sólida: lê-se bem de 24 px a fachada. Abaixo de 48 px, os fios de gravura somem sem prejudicar a leitura.</p>
     </div>
   </div>
 </section>
@@ -210,6 +210,10 @@
         <p class="legenda"><strong>Vertical.</strong> Placa, fachada, capa de apresentação. Arquivo: <code>logo-vertical.svg</code></p>
       </div>
       <div>
+        <div class="vitrine vitrine--claro"><img src="selo.svg" alt="Selo circular Aguillera Advocacia" width="240" height="240"></div>
+        <p class="legenda"><strong>Selo, a assinatura clássica.</strong> Medalha com o nome no arco superior e “Advocacia” no inferior. Timbre de pareceres, lacre de documentos, capa de apresentação. Arquivo: <code>selo.svg</code></p>
+      </div>
+      <div>
         <div class="vitrine vitrine--claro"><img src="simbolo-monocromatico.svg" alt="Símbolo monocromático" width="200" height="200"></div>
         <p class="legenda"><strong>Monocromático.</strong> Carimbo, gravação, fax, impressão a uma cor. Arquivo: <code>simbolo-monocromatico.svg</code></p>
       </div>
@@ -224,11 +228,12 @@
     <h2>Paleta</h2>
     <p class="suave" style="max-width: 62ch; margin-bottom: 28px;">
       O verde e o ouro já são os do site atual. A marca nova entra sem ruptura:
-      soma o cinza-ardósia da plumagem da harpia e o branco do seu peito.
+      soma o esmeralda do olho, o cinza-ardósia da plumagem da harpia e o branco do seu peito. O esmeralda é tempero, não base: aparece só no olho e em detalhes mínimos.
     </p>
-    <div class="grade g4">
+    <div class="grade g5">
       <div class="cor"><div class="cor__amostra" style="background:#0B3D2E"></div><div class="cor__info"><strong>Verde Pantanal</strong>#0B3D2E · cor institucional</div></div>
       <div class="cor"><div class="cor__amostra" style="background:linear-gradient(135deg,#E7D08A,#C8A84E 55%,#9C7C2E)"></div><div class="cor__info"><strong>Ouro Harpia</strong>#C8A84E · símbolo e destaques</div></div>
+      <div class="cor"><div class="cor__amostra" style="background:#1E8A5A"></div><div class="cor__info"><strong>Esmeralda</strong>#1E8A5A · o olho da harpia; uso pontual</div></div>
       <div class="cor"><div class="cor__amostra" style="background:#2E3438"></div><div class="cor__info"><strong>Ardósia</strong>#2E3438 · textos longos, impressos</div></div>
       <div class="cor"><div class="cor__amostra" style="background:#F6F3EA"></div><div class="cor__info"><strong>Pena Branca</strong>#F6F3EA · fundos e respiro</div></div>
     </div>
@@ -287,9 +292,9 @@
         </div>
         <p class="legenda">Cartão de visita, frente.</p>
         <div class="cartao-visita cartao-visita--verso" style="margin-top: 16px;">
-          <img src="simbolo.svg" alt="">
+          <img src="selo.svg" alt="">
         </div>
-        <p class="legenda">Verso: só o símbolo, sobre Pena Branca.</p>
+        <p class="legenda">Verso: o selo, sobre Pena Branca.</p>
       </div>
       <div>
         <div class="timbre">
@@ -307,7 +312,7 @@
           <img src="avatar.svg" alt="" width="64" height="64">
           <img src="avatar.svg" alt="" width="32" height="32">
         </div>
-        <p class="legenda">Avatar para Instagram, WhatsApp Business e LinkedIn. Arquivo: <code>avatar.svg</code></p>
+        <p class="legenda">Avatar para Instagram, WhatsApp Business e LinkedIn: o símbolo na medalha, sem texto, para continuar legível em miniatura. Arquivo: <code>avatar.svg</code></p>
       </div>
     </div>
   </div>
@@ -320,7 +325,7 @@
       <p class="rotulo">09 · Uso correto</p>
       <h3>Faça</h3>
       <ul class="regras regras--sim">
-        <li>Mantenha o símbolo sempre olhando para a direita.</li>
+        <li>Mantenha o símbolo sempre olhando para a direita, com o olho em esmeralda.</li>
         <li>Respeite uma margem livre igual à altura do olho ao topo do penacho.</li>
         <li>Use o ouro sobre verde, ou o verde sobre fundos claros.</li>
         <li>Abaixo de 24 px, use só o símbolo, sem o nome.</li>
@@ -333,6 +338,7 @@
         <li>Espelhar, girar, esticar ou contornar o símbolo.</li>
         <li>Somar balança, martelo, colunas gregas ou outros clichês jurídicos.</li>
         <li>Ouro sobre fundos amarelos ou fotografias sem contraste.</li>
+        <li>Trocar a cor do olho ou usar o esmeralda como cor de fundo.</li>
         <li>Sombras, brilhos ou efeitos 3D.</li>
       </ul>
     </div>
@@ -348,7 +354,7 @@
       <p class="suave">Esta é uma proposta conceitual. Antes de imprimir ou registrar, três cuidados profissionais.</p>
     </div>
     <ol class="passos">
-      <li><strong>Refinamento vetorial.</strong> Um designer ajusta curvas e espessuras e converte o texto do logotipo em contornos, para que o arquivo dispense as fontes.</li>
+      <li><strong>Refinamento vetorial.</strong> O texto dos logotipos já está convertido em contornos, e os arquivos dispensam fontes instaladas. Falta um designer ajustar curvas e espessuras para impressão em gráfica e gravação.</li>
       <li><strong>Busca de anterioridade no INPI.</strong> Pesquisa de marcas parecidas na classe 45 (serviços jurídicos) antes de investir na identidade.</li>
       <li><strong>Pedido de registro de marca mista</strong> (nome e símbolo), nos termos da Lei 9.279/1996, em nome do titular ou da sociedade de advogados.</li>
       <li><strong>Aplicação no site.</strong> Trocar o monograma “JA” do cabeçalho pelo símbolo da harpia e o favicon pelo <code>avatar.svg</code>, numa única alteração.</li>
