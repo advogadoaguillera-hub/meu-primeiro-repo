@@ -315,3 +315,7 @@ code { background: var(--pedra); padding: .1rem .35rem; border-radius: 5px; font
 #conteudo > .cabecalho + *, #conteudo > .voltar + * { margin-top: 0; }
 [data-painel] > * + * { margin-top: 1rem; }
 .voltar svg { width: 16px; height: 16px; }
+.barras-dias { gap: 3px; overflow-x: auto; }
+.barras-dias .coluna { min-width: 22px; }
+.barras-dias b { font-size: .68rem; }
+.barras-dias small { font-size: .62rem; }

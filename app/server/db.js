@@ -126,6 +126,17 @@ CREATE TABLE IF NOT EXISTS auditoria (
   criado_em  TEXT NOT NULL DEFAULT (datetime('now'))
 );
 
+-- Visitas ao site, já somadas por dia/página/fonte. Nada identifica a pessoa:
+-- sem IP, sem cookie, sem nome. Basta para saber o que é visto e de onde vêm.
+CREATE TABLE IF NOT EXISTS visitas (
+  dia        TEXT NOT NULL,
+  pagina     TEXT NOT NULL,
+  fonte      TEXT NOT NULL,
+  vistas     INTEGER NOT NULL DEFAULT 0,
+  visitantes INTEGER NOT NULL DEFAULT 0,
+  PRIMARY KEY (dia, pagina, fonte)
+);
+
 CREATE INDEX IF NOT EXISTS ix_processos_cliente ON processos(cliente_id);
 CREATE INDEX IF NOT EXISTS ix_andamentos_processo ON andamentos(processo_id, data);
 CREATE INDEX IF NOT EXISTS ix_mensagens_cliente ON mensagens(cliente_id, criado_em);
@@ -143,7 +154,14 @@ export function abrirBanco() {
   banco = new DatabaseSync(caminho);
   banco.exec('PRAGMA journal_mode = WAL; PRAGMA foreign_keys = ON; PRAGMA busy_timeout = 5000;');
   banco.exec(ESQUEMA);
+  migrar(banco);
   return banco;
+}
+
+// Colunas acrescentadas depois da primeira versão: bancos antigos ganham a coluna sem perder nada.
+function migrar(db) {
+  const colunas = (t) => db.prepare(`PRAGMA table_info(${t})`).all().map((c) => c.name);
+  if (!colunas('usuarios').includes('origem')) db.exec('ALTER TABLE usuarios ADD COLUMN origem TEXT');
 }
 
 export function fecharBanco() {

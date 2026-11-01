@@ -39,7 +39,7 @@ export default {
 
   // Campos vazios não aparecem no aplicativo.
   links: {
-    site: '',        // ex.: 'https://www.advocaciadaterra.com.br'
+    site: 'https://aguillera.art.br',
     instagram: '',   // ex.: 'https://instagram.com/seuperfil'
     facebook: '',
     linkedin: '',

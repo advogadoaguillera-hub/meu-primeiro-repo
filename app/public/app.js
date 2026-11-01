@@ -138,6 +138,7 @@ const I = {
   baixar: '<path d="M12 3v12M7 10l5 5 5-5M5 21h14"/>',
   voltar: '<path d="M15 18l-6-6 6-6"/>',
   whatsapp: '<path d="M3.5 20.5 5 16a8.5 8.5 0 1 1 3 3z"/><path d="M9 9.5c0 3 2.5 5.5 5.5 5.5l1-1.5-2-1-1 1c-1-.5-1.5-1-2-2l1-1-1-2z"/>',
+  site: '<circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18"/>',
   sincronizar: '<path d="M21 12a9 9 0 0 1-15.5 6.3L3 16M3 12a9 9 0 0 1 15.5-6.3L21 8M21 3v5h-5M3 21v-5h5"/>',
 };
 const icone = (nome) => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${I[nome] || ''}</svg>`;
@@ -184,6 +185,7 @@ const MENU_ESCRITORIO = [
   ['#/mensagens', 'Mensagens', 'mensagem'],
   ['#/financeiro', 'Financeiro', 'financeiro'],
   ['#/solicitacoes', 'Solicitações', 'solicitacao'],
+  ['#/site', 'Site', 'site'],
   ['#/assistente', 'Claude', 'claude'],
 ];
 
@@ -197,7 +199,9 @@ function limpar() {
 
 async function rotear() {
   limpar();
-  const [, rota = '', param] = (location.hash || '#/').split('/');
+  const [caminho, consulta = ''] = (location.hash || '#/').split('?');
+  estado.consulta = new URLSearchParams(consulta);
+  const [, rota = '', param] = caminho.split('/');
   if (!estado.usuario) {
     return rota === 'cadastro' ? telaCadastro() : telaEntrar();
   }
@@ -205,7 +209,7 @@ async function rotear() {
 
   const telas = ehEscritorio()
     ? { painel: escPainel, clientes: escClientes, cliente: escCliente, processos: escProcessos, processo: escProcesso, mensagens: escMensagens,
-      financeiro: escFinanceiro, solicitacoes: escSolicitacoes, equipe: escEquipe, assistente: escAssistente, perfil: telaPerfil }
+      financeiro: escFinanceiro, solicitacoes: escSolicitacoes, site: escSite, equipe: escEquipe, assistente: escAssistente, perfil: telaPerfil }
     : { inicio: cliInicio, processos: cliProcessos, processo: cliProcesso, mensagens: cliMensagens, documentos: cliDocumentos,
       pagamentos: cliPagamentos, servicos: cliServicos, escritorio: cliEscritorio, perfil: telaPerfil };
   const tela = telas[rota];
@@ -302,6 +306,7 @@ function telaEntrar() {
       <button class="botao largo" type="submit">Entrar</button>
     </form>
     <p class="alternar">Ainda não tem conta? <a href="#/cadastro">Cadastre-se</a></p>
+    ${estado.marca?.links?.site ? `<p class="alternar pequeno"><a href="${e(estado.marca.links.site)}">← Voltar ao site</a></p>` : ''}
     <p class="alternar pequeno">Esqueceu a senha? Fale com o escritório${estado.marca?.contato?.whatsapp ? ` pelo <a href="https://wa.me/${e(estado.marca.contato.whatsapp)}" target="_blank" rel="noopener">WhatsApp</a>` : ''}.</p>`);
   aoEnviar($('#f-entrar'), async (d) => {
     estado.usuario = (await api('POST', '/entrar', d)).usuario;
@@ -321,7 +326,7 @@ function telaCadastro() {
       </div>
       <div class="linha-campos">
         <div class="campo"><label for="cpf">CPF</label><input id="cpf" name="cpf" type="text" inputmode="numeric"></div>
-        <div class="campo"><label for="area">Assunto de interesse</label><select id="area" name="area_interesse">${opcoesAreas()}</select></div>
+        <div class="campo"><label for="area">Assunto de interesse</label><select id="area" name="area_interesse">${opcoesAreas(estado.consulta.get('area'))}</select></div>
       </div>
       <div class="campo"><label for="senha">Senha</label><input id="senha" name="senha" type="password" autocomplete="new-password" minlength="8" required><small>Pelo menos 8 caracteres.</small></div>
       <label class="caixa-marcar"><input type="checkbox" name="consentimento" value="1" required>
@@ -329,10 +334,13 @@ function telaCadastro() {
       <button class="botao largo" type="submit">Criar conta</button>
     </form>
     <p class="alternar">Já tem conta? <a href="#/entrar">Entrar</a></p>`);
+  // Quem chega do site já vem com a área marcada e a origem anotada (ex.: site-civel).
+  const origem = estado.consulta.get('origem') || '';
   aoEnviar($('#f-cadastro'), async (d) => {
-    estado.usuario = (await api('POST', '/cadastro', { ...d, consentimento: Boolean(d.consentimento) })).usuario;
+    estado.usuario = (await api('POST', '/cadastro', { ...d, origem, consentimento: Boolean(d.consentimento) })).usuario;
     avisar('Conta criada. Bem-vindo(a)!');
-    navegar('#/inicio');
+    // Veio para enviar um caso? Já abre o pedido na área escolhida.
+    navegar(d.area_interesse && origem ? `#/servicos?area=${encodeURIComponent(d.area_interesse)}` : '#/inicio');
   });
 }
 
@@ -544,9 +552,11 @@ async function cliServicos(c) {
       <button class="botao" type="submit">Enviar pedido</button></form>`, async (_f, d) => {
       await api('POST', '/cliente/solicitacoes', d);
       avisar('Pedido enviado. O escritório vai responder por aqui.');
-      rotear();
+      navegar('#/servicos');
     });
   }));
+  const pedida = estado.consulta.get('area');
+  if (pedida) $(`[data-area="${CSS.escape(pedida)}"]`, c)?.click();
 }
 
 function cliEscritorio(c) {
@@ -611,7 +621,7 @@ async function escClientes(c) {
     const lista = await api('GET', `/escritorio/clientes?busca=${encodeURIComponent($('#busca', c).value)}&situacao=${situacao}`);
     $('#tabela', c).innerHTML = lista.length ? `<div class="tabela-envolve"><table><thead><tr><th>Cliente</th><th class="esconde-movel">Área</th><th class="num esconde-movel">Processos</th><th class="num">Em atraso</th><th class="esconde-movel">Desde</th></tr></thead><tbody>
       ${lista.map((x) => `<tr class="clicavel" data-ir="#/cliente/${x.id}"><td><strong>${e(x.nome)}</strong> ${x.mensagens_nao_lidas ? '<span class="selo ouro">mensagem</span>' : ''} ${x.ativo ? '' : '<span class="selo">sem acesso</span>'}<div class="suave pequeno">${e(x.email)}${x.telefone ? ` · ${e(x.telefone)}` : ''}</div></td>
-        <td class="esconde-movel">${e(nomeArea(x.area_interesse))}</td><td class="num esconde-movel">${x.processos_ativos}</td>
+        <td class="esconde-movel">${e(nomeArea(x.area_interesse))}${x.origem ? `<div class="suave pequeno">via ${e(nomeOrigem(x.origem))}</div>` : ''}</td><td class="num esconde-movel">${x.processos_ativos}</td>
         <td class="num">${x.em_atraso_centavos ? `<span class="selo perigo">${reais(x.em_atraso_centavos)}</span>` : '<span class="selo ok">em dia</span>'}</td>
         <td class="esconde-movel suave pequeno">${dataBr(x.criado_em)}</td></tr>`).join('')}</tbody></table></div>` : vazio('Nenhum cliente encontrado');
   };
@@ -946,6 +956,44 @@ async function escFinanceiro(c) {
   }));
   ligarCobrancas(c);
   await carregar();
+}
+
+// "site-civel" → "site · página Cível"
+const nomeOrigem = (o) => {
+  if (!o) return 'app / escritório';
+  const [canal, ...resto] = String(o).split('-');
+  const pag = { inicio: 'página inicial', civel: 'página Cível', 'civel-topo': 'página Cível (topo)', criminal: 'página Criminal', livros: 'Livros', menu: 'menu' }[resto.join('-')] || resto.join(' ');
+  return canal === 'site' ? `site${pag ? ` · ${pag}` : ''}` : o;
+};
+
+async function escSite(c) {
+  const dias = Number(estado.consulta.get('dias')) || 30;
+  const r = await api('GET', `/escritorio/site?dias=${dias}`);
+  const maxDia = Math.max(1, ...r.por_dia.map((x) => x.visitantes));
+  const site = estado.marca.links.site;
+  c.innerHTML = `${cabecalho('Visitantes e cadastros', 'Site', `Quem visita ${site ? `<a href="${e(site)}" target="_blank" rel="noopener">${e(site.replace(/^https?:\/\//, ''))}</a>` : 'o site'}, por onde chega e quantos viram cadastro. Sem cookies e sem dado pessoal (LGPD).`,
+    `<div class="filtros">${[7, 30, 90].map((d) => `<button type="button" data-dias="${d}" aria-pressed="${d === dias}">${d} dias</button>`).join('')}</div>`)}
+    <div class="grade grade-4">
+      <div class="indicador"><small>Visitantes</small><strong>${r.visitantes}</strong></div>
+      <div class="indicador"><small>Páginas vistas</small><strong>${r.vistas}</strong></div>
+      <div class="indicador ok"><small>Cadastros vindos do site</small><strong>${r.cadastros_do_site}</strong></div>
+      <div class="indicador ok"><small>Conversão (cadastro ÷ visitante)</small><strong>${String(r.conversao).replace('.', ',')}%</strong></div>
+    </div>
+    <section class="cartao"><div class="cartao-titulo"><h2>Visitantes por dia</h2><span class="suave pequeno">últimos ${r.dias} dias</span></div>
+      ${r.por_dia.length ? `<div class="barras barras-dias">${r.por_dia.map((x) => `<div class="coluna" title="${dataBr(x.dia)}: ${x.visitantes} visitantes, ${x.vistas} páginas"><b>${x.visitantes}</b><div class="barra" data-altura="${Math.round((x.visitantes / maxDia) * 100)}"></div><small>${x.dia.slice(8, 10)}/${x.dia.slice(5, 7)}</small></div>`).join('')}</div>`
+    : vazio('Nenhuma visita registrada ainda', 'Assim que o site estiver no ar com o contador, as visitas aparecem aqui.')}
+    </section>
+    <div class="grade grade-2">
+      <section class="cartao"><h2>Páginas mais vistas</h2><br>${r.paginas.length ? `<div class="tabela-envolve"><table><thead><tr><th>Página</th><th class="num" title="Visitantes que chegaram ao site por esta página">Entradas</th><th class="num">Vistas</th></tr></thead><tbody>
+        ${r.paginas.map((x) => `<tr><td>${site ? `<a href="${e(site.replace(/\/$/, '') + x.pagina)}" target="_blank" rel="noopener">${e(x.pagina)}</a>` : e(x.pagina)}</td><td class="num">${x.visitantes}</td><td class="num">${x.vistas}</td></tr>`).join('')}</tbody></table></div>` : vazio('Sem dados')}</section>
+      <section class="cartao"><h2>De onde chegam</h2><br>${r.fontes.length ? `<ul class="lista">${r.fontes.map((x) => `<li><div class="titulo">${e(x.fonte === 'direto' ? 'Direto / link salvo' : x.fonte)}</div><strong>${x.visitantes}</strong></li>`).join('')}</ul>` : vazio('Sem dados')}</section>
+    </div>
+    <div class="grade grade-2">
+      <section class="cartao"><h2>Cadastros por origem</h2><br>${r.cadastros_por_origem.length ? `<ul class="lista">${r.cadastros_por_origem.map((x) => `<li><div class="titulo">${e(nomeOrigem(x.origem === 'app / escritório' ? '' : x.origem))}</div><strong>${x.n}</strong></li>`).join('')}</ul>` : vazio('Nenhum cadastro no período')}</section>
+      <section class="cartao"><div class="cartao-titulo"><h2>Últimos cadastros</h2><a class="pequeno" href="#/clientes">Clientes</a></div>${r.ultimos_cadastros.length ? `<ul class="lista">${r.ultimos_cadastros.map((x) => `<li><a class="item" href="#/cliente/${x.id}"><div class="titulo">${e(x.nome)}</div><div class="meta">${e(nomeArea(x.area_interesse))} · via ${e(nomeOrigem(x.origem))} · ${quando(x.criado_em)}</div></a></li>`).join('')}</ul>` : vazio('Nenhum cadastro ainda')}</section>
+    </div>`;
+  $$('.barra', c).forEach((b) => { b.style.height = `${b.dataset.altura}%`; });
+  $$('[data-dias]', c).forEach((b) => b.addEventListener('click', () => navegar(`#/site?dias=${b.dataset.dias}`)));
 }
 
 async function escSolicitacoes(c) {

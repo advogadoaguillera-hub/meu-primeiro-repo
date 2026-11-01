@@ -36,7 +36,7 @@ export function validarEmail(email) {
 
 const sha = (t) => createHash('sha256').update(t).digest('hex');
 
-export function criarUsuario({ nome, email, senha, papel, telefone, cpf, endereco, area_interesse, consentimento }, autorId) {
+export function criarUsuario({ nome, email, senha, papel, telefone, cpf, endereco, area_interesse, consentimento, origem }, autorId) {
   if (!nome?.trim()) throw new ErroDeRegra('Informe o nome.');
   const e = validarEmail(email);
   validarSenha(senha);
@@ -46,10 +46,12 @@ export function criarUsuario({ nome, email, senha, papel, telefone, cpf, enderec
   }
   if (db().prepare('SELECT 1 FROM usuarios WHERE email = ?').get(e)) throw new ErroDeRegra('Este e-mail já está cadastrado.', 409);
   const r = db().prepare(`
-    INSERT INTO usuarios (nome, email, senha_hash, papel, telefone, cpf, endereco, area_interesse, consentimento_lgpd_em)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`).run(
+    INSERT INTO usuarios (nome, email, senha_hash, papel, telefone, cpf, endereco, area_interesse, consentimento_lgpd_em, origem)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`).run(
     nome.trim().slice(0, 160), e, gerarHash(senha), papel, telefone || null, cpf || null, endereco || null,
-    area_interesse || null, consentimento ? new Date().toISOString() : null);
+    area_interesse || null, consentimento ? new Date().toISOString() : null,
+    // De onde veio o cadastro (ex.: "site-civel"), só letras, números e hífen.
+    /^[a-z0-9-]{1,40}$/.test(String(origem || '')) ? origem : null);
   const id = Number(r.lastInsertRowid);
   registrar(autorId ?? id, 'usuario.criado', { id, papel });
   return buscarUsuario(id);

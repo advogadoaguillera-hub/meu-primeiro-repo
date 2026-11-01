@@ -28,7 +28,7 @@ export function registrar(usuarioId, acao, detalhe, origem = 'app') {
 }
 
 // ---------------------------------------------------------------- pessoas
-const CAMPOS_PUBLICOS = 'id, nome, email, papel, ativo, telefone, cpf, endereco, area_interesse, observacoes, criado_em, ultimo_acesso';
+const CAMPOS_PUBLICOS = 'id, nome, email, papel, ativo, telefone, cpf, endereco, area_interesse, origem, observacoes, criado_em, ultimo_acesso';
 
 export function buscarUsuario(id) {
   return db().prepare(`SELECT ${CAMPOS_PUBLICOS} FROM usuarios WHERE id = ?`).get(id);
@@ -51,7 +51,7 @@ export function exigirCliente(id) {
 export function listarClientes({ busca = '', situacao = 'todos' } = {}) {
   const termo = `%${busca.trim()}%`;
   const linhas = db().prepare(`
-    SELECT u.id, u.nome, u.email, u.telefone, u.area_interesse, u.ativo, u.criado_em, u.ultimo_acesso,
+    SELECT u.id, u.nome, u.email, u.telefone, u.area_interesse, u.origem, u.ativo, u.criado_em, u.ultimo_acesso,
       (SELECT COUNT(*) FROM processos p WHERE p.cliente_id = u.id AND p.status = 'ativo') AS processos_ativos,
       (SELECT COALESCE(SUM(valor_centavos),0) FROM cobrancas c
          WHERE c.cliente_id = u.id AND c.status = 'aberta' AND c.vencimento < date('now','localtime')) AS em_atraso_centavos,
@@ -453,6 +453,53 @@ export function inicioDoCliente(clienteId) {
     mensagens_nao_lidas: db().prepare('SELECT COUNT(*) n FROM mensagens WHERE cliente_id=? AND do_escritorio=1 AND lida=0').get(clienteId).n,
     documentos_pendentes: db().prepare("SELECT COUNT(*) n FROM documentos WHERE cliente_id=? AND status='aguardando_assinatura'").get(clienteId).n,
     solicitacoes: listarSolicitacoes({ clienteId }),
+  };
+}
+
+// ---------------------------------------------------------------- site e visitantes
+// De onde a pessoa chegou, pelo endereço da página anterior.
+export function fonteDaVisita(referencia, hostDoSite) {
+  let host = '';
+  try { host = new URL(referencia).hostname.toLowerCase(); } catch { return 'direto'; }
+  if (!host || host === hostDoSite || host.endsWith(`.${hostDoSite}`)) return 'direto';
+  const fontes = [['google', 'Google'], ['bing', 'Bing'], ['instagram', 'Instagram'], ['facebook', 'Facebook'], ['fb.', 'Facebook'],
+    ['whatsapp', 'WhatsApp'], ['wa.me', 'WhatsApp'], ['linkedin', 'LinkedIn'], ['youtube', 'YouTube'], ['t.co', 'X/Twitter'], ['x.com', 'X/Twitter']];
+  return fontes.find(([trecho]) => host.includes(trecho))?.[1] || 'outros sites';
+}
+
+export function registrarVisita({ pagina, fonte, nova }) {
+  const p = String(pagina || '/').split(/[?#]/)[0].toLowerCase();
+  if (!/^\/[a-z0-9/_.-]{0,119}$/.test(p)) throw new ErroDeRegra('Página inválida.');
+  db().prepare(`INSERT INTO visitas (dia, pagina, fonte, vistas, visitantes) VALUES (?, ?, ?, 1, ?)
+    ON CONFLICT (dia, pagina, fonte) DO UPDATE SET vistas = vistas + 1, visitantes = visitantes + excluded.visitantes`)
+    .run(hoje(), p, String(fonte).slice(0, 30), nova ? 1 : 0);
+}
+
+// Painel "Site": visitas, visitantes, páginas, fontes e quantos viraram cadastro.
+export function relatorioSite(dias = 30) {
+  const d = Math.min(Math.max(Math.trunc(Number(dias) || 30), 1), 365);
+  const desde = `-${d - 1} days`;
+  const um = (sql, ...a) => db().prepare(sql).get(...a);
+  const tot = um("SELECT COALESCE(SUM(vistas),0) vistas, COALESCE(SUM(visitantes),0) visitantes FROM visitas WHERE dia >= date('now','localtime',?)", desde);
+  const cadastros = um("SELECT COUNT(*) n FROM usuarios WHERE papel='cliente' AND date(criado_em,'localtime') >= date('now','localtime',?)", desde).n;
+  const doSite = um("SELECT COUNT(*) n FROM usuarios WHERE papel='cliente' AND origem LIKE 'site%' AND date(criado_em,'localtime') >= date('now','localtime',?)", desde).n;
+  return {
+    dias: d,
+    vistas: tot.vistas,
+    visitantes: tot.visitantes,
+    cadastros,
+    cadastros_do_site: doSite,
+    conversao: tot.visitantes ? Math.round((doSite / tot.visitantes) * 1000) / 10 : 0,
+    por_dia: db().prepare(`SELECT dia, SUM(vistas) vistas, SUM(visitantes) visitantes FROM visitas
+      WHERE dia >= date('now','localtime',?) GROUP BY dia ORDER BY dia`).all(desde),
+    paginas: db().prepare(`SELECT pagina, SUM(vistas) vistas, SUM(visitantes) visitantes FROM visitas
+      WHERE dia >= date('now','localtime',?) GROUP BY pagina ORDER BY vistas DESC LIMIT 15`).all(desde),
+    fontes: db().prepare(`SELECT fonte, SUM(visitantes) visitantes, SUM(vistas) vistas FROM visitas
+      WHERE dia >= date('now','localtime',?) GROUP BY fonte ORDER BY visitantes DESC`).all(desde),
+    cadastros_por_origem: db().prepare(`SELECT COALESCE(origem,'app / escritório') origem, COUNT(*) n FROM usuarios
+      WHERE papel='cliente' AND date(criado_em,'localtime') >= date('now','localtime',?) GROUP BY origem ORDER BY n DESC`).all(desde),
+    ultimos_cadastros: db().prepare(`SELECT id, nome, area_interesse, origem, criado_em FROM usuarios
+      WHERE papel='cliente' ORDER BY criado_em DESC, id DESC LIMIT 10`).all(),
   };
 }
 

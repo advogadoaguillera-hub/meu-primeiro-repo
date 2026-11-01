@@ -84,7 +84,34 @@ Instagram, Facebook, áreas de atuação, chave Pix) está em
 [`config/escritorio.js`](config/escritorio.js). Preencha os links das redes sociais e a
 chave Pix ali; o que ficar vazio não aparece.
 
-## 4. Conectar o Claude ao aplicativo
+### Ligação com o site aguillera.art.br
+
+O site continua no GitHub Pages, sem custo, e o sistema mora em **`area.aguillera.art.br`**.
+
+- O menu do site tem o botão **Área do Cliente**.
+- As páginas de advocacia têm o botão **Cadastre-se e envie seu caso**, que abre o cadastro
+  com a área já marcada. Depois do cadastro, o cliente cai direto no pedido de análise.
+- Cada cadastro guarda de onde veio (ex.: *via site · página Cível*).
+- O arquivo `area-cliente.js` do site conta as visitas. Os números aparecem na aba
+  **Site** do escritório: visitantes, páginas vistas, de onde chegam (Google, Instagram,
+  WhatsApp…), páginas mais vistas e quantos visitantes viraram cadastro. Sem cookies e sem
+  dado pessoal.
+
+**Para pôr no ar** (uma vez):
+
+1. Hospede o sistema (Render, Railway ou VPS) e, no painel da hospedagem, cadastre o
+   domínio personalizado `area.aguillera.art.br`. A hospedagem informa um endereço de destino.
+2. No **registro.br** → domínio `aguillera.art.br` → **DNS → Editar zona**, **acrescente**:
+
+   | Tipo | Nome | Valor |
+   |---|---|---|
+   | CNAME | area | *o endereço informado pela hospedagem* |
+
+   Não apague os registros do GitHub Pages nem os da Zoho (e-mail).
+3. No `.env` do servidor: `NODE_ENV=production` e `TRUST_PROXY=1`.
+4. Aguarde a propagação (minutos a algumas horas) e abra `https://area.aguillera.art.br`.
+
+
 
 1. Crie uma chave em [platform.claude.com](https://platform.claude.com) → *API Keys*.
 2. Coloque em `ANTHROPIC_API_KEY=` no `.env` e reinicie.

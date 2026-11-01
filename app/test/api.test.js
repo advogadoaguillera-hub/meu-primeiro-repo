@@ -10,6 +10,7 @@ import { join } from 'node:path';
 const pasta = mkdtempSync(join(tmpdir(), 'aguillera-teste-'));
 process.env.DB_PATH = join(pasta, 'teste.db');
 process.env.UPLOADS_DIR = join(pasta, 'arquivos');
+process.env.SITE_ORIGENS = 'http://site.teste';
 delete process.env.ANTHROPIC_API_KEY;
 delete process.env.DATAJUD_API_KEY;
 
@@ -281,6 +282,43 @@ test('DataJud: tribunal pelo número CNJ e importação de movimentos', async ()
 
   const visto = await maria('GET', `/api/cliente/processos/${ids.processo}`);
   assert.ok(visto.dados.andamentos.some((a) => a.descricao === 'Decisão (tutela deferida)' && a.origem === 'datajud'));
+});
+
+test('site: contador de visitas aceita só o próprio site e não exige login', async () => {
+  const visita = (origem, corpo) => fetch(base + '/api/visita', {
+    method: 'POST', headers: { 'Content-Type': 'text/plain', ...(origem ? { Origin: origem } : {}) }, body: JSON.stringify(corpo),
+  });
+  const r = await visita('https://aguillera.art.br', { pagina: '/advocacia-civil/', referencia: 'https://www.google.com/search?q=x', nova: true });
+  assert.equal(r.status, 204);
+  assert.equal(r.headers.get('access-control-allow-origin'), 'https://aguillera.art.br');
+  assert.equal((await visita('http://site.teste', { pagina: '/advocacia-civil/', referencia: 'https://aguillera.art.br/', nova: false })).status, 204);
+  assert.equal((await visita('http://site.teste', { pagina: '/', referencia: 'https://l.instagram.com/', nova: true })).status, 204);
+  assert.equal((await visita('https://golpista.com', { pagina: '/' })).status, 403, 'outro site não conta');
+  assert.equal((await visita(null, { pagina: '/' })).status, 403, 'sem origem não conta');
+  assert.equal((await visita('http://site.teste', { pagina: '/<script>' })).status, 400);
+
+  const rel = (await gestor('GET', '/api/escritorio/site?dias=7')).dados;
+  assert.equal(rel.visitantes, 2);
+  assert.equal(rel.vistas, 3);
+  assert.deepEqual(rel.paginas.map((x) => [x.pagina, x.vistas]), [['/advocacia-civil/', 2], ['/', 1]]);
+  const fontes = Object.fromEntries(rel.fontes.map((x) => [x.fonte, x.visitantes]));
+  assert.deepEqual(fontes, { Google: 1, Instagram: 1, direto: 0 });
+  assert.equal((await maria('GET', '/api/escritorio/site')).status, 403, 'cliente não vê o relatório');
+});
+
+test('site: cadastro guarda a origem e entra na conversão', async () => {
+  const visitante = sessao();
+  const r = await visitante('POST', '/api/cadastro', { nome: 'Rita Prado', email: 'rita@teste.br', senha: '12345678', area_interesse: 'civel', origem: 'site-civel', consentimento: true });
+  assert.equal(r.status, 201);
+  assert.equal(r.dados.usuario.origem, 'site-civel');
+  const ruim = await sessao()('POST', '/api/cadastro', { nome: 'X', email: 'x2@teste.br', senha: '12345678', origem: '<b>', consentimento: true });
+  assert.equal(ruim.dados.usuario.origem, null, 'origem estranha é descartada');
+  const rel = (await gestor('GET', '/api/escritorio/site')).dados;
+  assert.equal(rel.cadastros_do_site, 1);
+  assert.equal(rel.conversao, 50);
+  assert.ok(rel.cadastros_por_origem.some((x) => x.origem === 'site-civel' && x.n === 1));
+  const clientes = (await gestor('GET', '/api/escritorio/clientes?busca=Rita')).dados;
+  assert.equal(clientes[0].origem, 'site-civel');
 });
 
 test('conversão de valores em reais', () => {

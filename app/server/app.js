@@ -32,6 +32,20 @@ const id = (v) => {
   return x;
 };
 
+// Endereços do site que podem registrar visitas: o site do escritório (com e sem www)
+// e, para testes no computador, os de SITE_ORIGENS no .env (separados por vírgula).
+function origensPermitidas() {
+  const lista = new Set();
+  try {
+    const u = new URL(escritorio.links.site);
+    const semWww = u.hostname.replace(/^www\./, '');
+    lista.add(`${u.protocol}//${semWww}`);
+    lista.add(`${u.protocol}//www.${semWww}`);
+  } catch { /* site ainda não configurado */ }
+  for (const o of String(process.env.SITE_ORIGENS || '').split(',')) if (o.trim()) lista.add(o.trim().replace(/\/$/, ''));
+  return lista;
+}
+
 export function criarApp() {
   mkdirSync(PASTA_ARQUIVOS, { recursive: true });
   const app = express();
@@ -51,6 +65,37 @@ export function criarApp() {
 
   app.use(express.json({ limit: '1mb' }));
   app.use(auth.identificar);
+
+  // Contador de visitas do site (aguillera.art.br). Vem de outro endereço, por isso
+  // fica antes da proteção CSRF; só aceita o próprio site e não grava dado pessoal.
+  const origensDoSite = origensPermitidas();
+  const hostDoSite = (() => { try { return new URL(escritorio.links.site).hostname.replace(/^www\./, ''); } catch { return ''; } })();
+  const ritmo = new Map();
+  app.options('/api/visita', (req, res) => {
+    const o = req.get('Origin');
+    if (origensDoSite.has(o)) res.setHeader('Access-Control-Allow-Origin', o);
+    res.setHeader('Access-Control-Allow-Methods', 'POST');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+    res.status(204).end();
+  });
+  app.post('/api/visita', express.text({ type: '*/*', limit: '2kb' }), (req, res) => {
+    const origem = req.get('Origin') || (() => { try { return new URL(req.get('Referer')).origin; } catch { return ''; } })();
+    if (!origensDoSite.has(origem)) return res.status(403).end();
+    res.setHeader('Access-Control-Allow-Origin', origem);
+    const minuto = Math.floor(Date.now() / 60_000);
+    const chave = `${req.ip}|${minuto}`;
+    const qtd = (ritmo.get(chave) || 0) + 1;
+    ritmo.set(chave, qtd);
+    if (ritmo.size > 5000) ritmo.clear();
+    if (qtd > 60) return res.status(429).end();
+    try {
+      const d = JSON.parse(req.body || '{}');
+      n.registrarVisita({ pagina: d.pagina, fonte: n.fonteDaVisita(d.referencia, hostDoSite), nova: Boolean(d.nova) });
+      res.status(204).end();
+    } catch {
+      res.status(400).end();
+    }
+  });
 
   // Proteção contra requisições forjadas (CSRF): toda escrita na API precisa
   // do cabeçalho X-Aguillera, que só o próprio aplicativo envia.
@@ -159,6 +204,7 @@ export function criarApp() {
   api.use('/escritorio', auth.exigirEscritorio, esc);
 
   esc.get('/painel', (_req, res) => res.json(n.painel()));
+  esc.get('/site', (req, res) => res.json(n.relatorioSite(req.query.dias)));
 
   esc.get('/clientes', (req, res) => res.json(n.listarClientes({ busca: String(req.query.busca || ''), situacao: String(req.query.situacao || 'todos') })));
   esc.post('/clientes', r((req, res) => {
