@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Aguillera — Escritório e Portal do Cliente</title>
+<meta name="description" content="Acompanhe seus processos, converse com o escritório, veja contratos, procurações e pagamentos.">
+<meta name="theme-color" content="#0B3D2E">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Aguillera">
+<link rel="icon" href="/icones/icone.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="/icones/icone-180.png">
+<link rel="manifest" href="/manifest.webmanifest">
+<link rel="preload" as="font" type="font/woff2" href="/fontes/libre-franklin-400.woff2" crossorigin>
+<link rel="preload" as="font" type="font/woff2" href="/fontes/eb-garamond-400.woff2" crossorigin>
+<link rel="stylesheet" href="/app.css">
+<script type="module" src="/app.js"></script>
+</head>
+<body>
+<div id="app"><div class="carregando">Carregando…</div></div>
+<div class="avisos" id="avisos" role="status" aria-live="polite"></div>
+<dialog id="modal" aria-labelledby="modal-titulo">
+  <div class="modal-topo"><h2 id="modal-titulo"></h2><button class="fechar" type="button" data-fechar aria-label="Fechar">×</button></div>
+  <div class="modal-corpo" id="modal-corpo"></div>
+</dialog>
+</body>
+</html>

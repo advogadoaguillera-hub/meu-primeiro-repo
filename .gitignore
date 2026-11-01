@@ -1,4 +1,6 @@
-.claude/
+# Configurações locais do Claude Code ficam fora; os agentes do projeto entram.
+.claude/*
+!.claude/agents/
 
 # Material de estudo e doutrina — arquivos grandes, protegidos por direito
 # autoral. Ficam apenas na máquina local, nunca no repositório público.
