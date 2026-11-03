@@ -14,9 +14,9 @@ process.env.SITE_ORIGENS = 'http://site.teste';
 delete process.env.ANTHROPIC_API_KEY;
 delete process.env.DATAJUD_API_KEY;
 
-const { criarApp } = await import('../server/app.js');
+const { montarNode, iniciarServidor } = await import('../server/node.js');
 const { criarUsuario } = await import('../server/auth.js');
-const { fecharBanco } = await import('../server/db.js');
+const { fecharBanco } = await import('../server/banco.js');
 const { aliasDoTribunal, sincronizarProcesso } = await import('../server/datajud.js');
 const { centavos } = await import('../server/nucleo.js');
 
@@ -46,8 +46,9 @@ const joao = sessao();
 const ids = {};
 
 before(async () => {
-  criarUsuario({ nome: 'Jocsan Aguillera', email: 'gestor@teste.br', senha: 'senha-forte-1', papel: 'gestor' });
-  servidor = criarApp().listen(0);
+  const app = await montarNode(process.env);
+  await criarUsuario({ nome: 'Jocsan Aguillera', email: 'gestor@teste.br', senha: 'senha-forte-1', papel: 'gestor' });
+  servidor = iniciarServidor(app, 0);
   await new Promise((ok) => servidor.once('listening', ok));
   base = `http://127.0.0.1:${servidor.address().port}`;
 });
@@ -321,6 +322,40 @@ test('site: cadastro guarda a origem e entra na conversão', async () => {
   assert.equal(clientes[0].origem, 'site-civel');
 });
 
+test('chave de acesso: o Claude opera pelas ferramentas, sem cookie e sem CSRF', async () => {
+  const criada = await gestor('POST', '/api/escritorio/chaves', { nome: 'Claude Desktop' });
+  assert.equal(criada.status, 201);
+  const chave = criada.dados.chave;
+  assert.match(chave, /^agl_/);
+  const comChave = (metodo, caminho, corpo) => fetch(base + caminho, {
+    method: metodo, headers: { Authorization: `Bearer ${chave}`, 'Content-Type': 'application/json' }, body: corpo && JSON.stringify(corpo),
+  });
+  const lista = await (await comChave('GET', '/api/escritorio/ferramentas')).json();
+  assert.ok(lista.some((f) => f.nome === 'listar_inadimplentes'));
+  const inad = await comChave('POST', '/api/escritorio/ferramentas/listar_inadimplentes', {});
+  assert.equal(inad.status, 200);
+  assert.ok(Array.isArray(await inad.json()));
+  const ruim = await comChave('POST', '/api/escritorio/ferramentas/ver_processo', { processo_id: 'abc' });
+  assert.equal(ruim.status, 400, 'dados validados pelo mesmo esquema do Claude');
+  assert.equal((await comChave('POST', '/api/escritorio/ferramentas/nao_existe', {})).status, 404);
+
+  // Cliente não cria chave; chave falsa não entra; chave apagada para de funcionar.
+  assert.equal((await maria('POST', '/api/escritorio/chaves', {})).status, 403);
+  assert.equal((await fetch(base + '/api/escritorio/painel', { headers: { Authorization: 'Bearer agl_' + 'x'.repeat(30) } })).status, 401);
+  const minhas = (await gestor('GET', '/api/escritorio/chaves')).dados;
+  assert.equal(minhas.length, 1);
+  assert.ok(minhas[0].ultimo_uso, 'registra o último uso');
+  assert.equal(minhas[0].token_hash, undefined, 'a chave nunca volta do servidor');
+  await gestor('DELETE', `/api/escritorio/chaves/${minhas[0].id}`);
+  assert.equal((await comChave('GET', '/api/escritorio/painel')).status, 401);
+});
+
+test('datas seguem o fuso de Corumbá, não o do servidor', async () => {
+  const { hoje, inicioDoDiaUtc } = await import('../server/nucleo.js');
+  assert.match(hoje(), /^\d{4}-\d{2}-\d{2}$/);
+  assert.equal(inicioDoDiaUtc('2026-11-03'), '2026-11-03 04:00:00', 'meia-noite em Corumbá = 4h em Greenwich');
+});
+
 test('conversão de valores em reais', () => {
   assert.equal(centavos('1.234,56'), 123456);
   assert.equal(centavos('1500'), 150000);
@@ -364,5 +399,5 @@ test('telas: qualquer rota fora da API devolve o aplicativo', async () => {
   const r = await fetch(base + '/painel');
   assert.equal(r.status, 200);
   assert.match(await r.text(), /<html/);
-  assert.equal((await fetch(base + '/api/nao-existe')).status, 401, 'rotas desconhecidas da API exigem login');
+  assert.equal((await fetch(base + '/api/nao-existe')).status, 404);
 });

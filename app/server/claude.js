@@ -13,13 +13,23 @@ import { betaZodTool } from '@anthropic-ai/sdk/helpers/beta/zod';
 import escritorio from '../config/escritorio.js';
 import * as n from './nucleo.js';
 import { ferramentas } from './ferramentas.js';
+import { variavel } from './ambiente.js';
 
-const MODELO = () => process.env.CLAUDE_MODEL || 'claude-opus-5-5';
+const MODELO = () => variavel('CLAUDE_MODEL', 'claude-opus-5-5');
 
-export const claudeConfigurado = () => Boolean(process.env.ANTHROPIC_API_KEY || process.env.ANTHROPIC_AUTH_TOKEN);
+export const claudeConfigurado = () => Boolean(variavel('ANTHROPIC_API_KEY'));
 
+// Um cliente por chave (a chave vem do .env ou dos segredos do Cloudflare).
 let cliente;
-const api = () => (cliente ??= new Anthropic());
+let chaveDoCliente;
+const api = () => {
+  const chave = variavel('ANTHROPIC_API_KEY');
+  if (!cliente || chave !== chaveDoCliente) {
+    cliente = new Anthropic({ apiKey: chave });
+    chaveDoCliente = chave;
+  }
+  return cliente;
+};
 
 // Recusa por política de segurança: o próprio servidor tenta outro modelo
 // adequado antes de desistir ("fallbacks: default").
@@ -66,7 +76,7 @@ Data de hoje: ${n.hoje()}.`;
 
 // Conversa com o assistente. `historico` é a conversa visível: [{papel:'usuario'|'assistente', texto}].
 export async function conversarComAssistente(usuario, historico) {
-  if (!claudeConfigurado()) throw new n.ErroDeRegra('O Claude ainda não foi conectado. Configure ANTHROPIC_API_KEY no arquivo .env.', 503);
+  if (!claudeConfigurado()) throw new n.ErroDeRegra('O Claude ainda não foi conectado. Configure ANTHROPIC_API_KEY.', 503);
   const mensagens = historico
     .filter((m) => m && typeof m.texto === 'string' && m.texto.trim())
     .slice(-30)
@@ -86,12 +96,12 @@ export async function conversarComAssistente(usuario, historico) {
     thread: false,
     ...SEGURANCA,
   });
-  n.registrar(usuario.id, 'claude.assistente', { pergunta: mensagens.at(-1).content.slice(0, 120) }, 'claude');
+  await n.registrar(usuario.id, 'claude.assistente', { pergunta: mensagens.at(-1).content.slice(0, 120) }, 'claude');
   return textoFinal(final);
 }
 
 async function pedirTexto(sistema, pedido) {
-  if (!claudeConfigurado()) throw new n.ErroDeRegra('O Claude ainda não foi conectado. Configure ANTHROPIC_API_KEY no arquivo .env.', 503);
+  if (!claudeConfigurado()) throw new n.ErroDeRegra('O Claude ainda não foi conectado. Configure ANTHROPIC_API_KEY.', 503);
   const msg = await api().beta.messages.create({
     model: MODELO(),
     max_tokens: 4000,
@@ -105,12 +115,15 @@ async function pedirTexto(sistema, pedido) {
 
 // Rascunho de resposta para a conversa de um cliente.
 export async function sugerirResposta(clienteId, usuario) {
-  const c = n.exigirCliente(clienteId);
-  const conversa = n.listarConversa(clienteId).slice(-25)
+  const [c, msgs, procs, cobs] = await Promise.all([
+    n.exigirCliente(clienteId), n.listarConversa(clienteId),
+    n.listarProcessos({ clienteId, apenasVisivel: true }), n.listarCobrancas({ clienteId }),
+  ]);
+  const conversa = msgs.slice(-25)
     .map((m) => `[${m.criado_em}] ${m.do_escritorio ? 'ESCRITÓRIO' : 'CLIENTE'}: ${m.texto}`).join('\n');
-  const processos = n.listarProcessos({ clienteId, apenasVisivel: true })
+  const processos = procs
     .map((p) => `- ${p.titulo} (${p.numero_cnj || 'sem número'}), situação ${p.status}; último andamento: ${p.ultimo_andamento || 'nenhum'}`).join('\n');
-  const abertas = n.listarCobrancas({ clienteId }).filter((x) => x.status === 'aberta')
+  const abertas = cobs.filter((x) => x.status === 'aberta')
     .map((x) => `- ${x.descricao}: ${reais(x.valor_centavos)}, vence ${x.vencimento} (${x.situacao})`).join('\n');
 
   const texto = await pedirTexto(
@@ -119,18 +132,18 @@ Escreva só o texto da mensagem, pronto para enviar: cordial, claro, sem juridiq
 Use apenas os fatos fornecidos. Se a pergunta exigir informação que não está nos dados, diga ao cliente que o escritório vai verificar e retornar — não invente.`,
     `Cliente: ${c.nome}\n\nProcessos:\n${processos || '(nenhum)'}\n\nCobranças em aberto:\n${abertas || '(nenhuma)'}\n\nConversa (mais recente por último):\n${conversa || '(vazia)'}\n\nRedija a próxima mensagem do escritório.`,
   );
-  n.registrar(usuario.id, 'claude.sugestao_resposta', { cliente_id: clienteId }, 'claude');
+  await n.registrar(usuario.id, 'claude.sugestao_resposta', { cliente_id: clienteId }, 'claude');
   return texto;
 }
 
 // Explicação simples de um andamento técnico, para o cliente.
 export async function explicarAndamento(processoId, descricao, usuario) {
-  const p = n.buscarProcesso(processoId);
+  const p = await n.buscarProcesso(processoId);
   const texto = await pedirTexto(
     `Você explica andamentos processuais para clientes leigos do escritório ${escritorio.marca.nomeCompleto}.
 Em no máximo 3 frases: o que aconteceu e o que significa agora. Sem promessa de resultado. Sem inventar fatos além do andamento.`,
     `Processo: ${p.titulo} (${p.area || 'área não informada'})\nAndamento: ${descricao}`,
   );
-  n.registrar(usuario.id, 'claude.explicacao', { processo_id: processoId }, 'claude');
+  await n.registrar(usuario.id, 'claude.explicacao', { processo_id: processoId }, 'claude');
   return texto;
 }

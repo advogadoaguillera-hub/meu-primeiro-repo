@@ -1,7 +1,8 @@
 // Ferramentas que o Claude usa para operar o escritório.
 // Definidas uma única vez e servidas por dois caminhos:
 //   - server/claude.js → assistente dentro do aplicativo (API do Claude)
-//   - mcp/server.js    → extensão para o Claude Desktop / Claude Code (MCP)
+//   - mcp/server.js    → extensão para o Claude Desktop / Claude Code (MCP),
+//                        que chama /api/escritorio/ferramentas com uma chave de acesso
 // Toda escrita entra na auditoria com origem "claude".
 
 import { z } from 'zod';
@@ -31,14 +32,13 @@ export function ferramentas(autorId) {
       nome: 'ficha_do_cliente',
       descricao: 'Ficha completa de um cliente: dados cadastrais, processos, cobranças, documentos, solicitações e as últimas 20 mensagens.',
       esquema: z.object({ cliente_id: z.number().int() }),
-      executar: ({ cliente_id }) => ({
-        cliente: n.exigirCliente(cliente_id),
-        processos: n.listarProcessos({ clienteId: cliente_id }),
-        cobrancas: n.listarCobrancas({ clienteId: cliente_id }),
-        documentos: n.listarDocumentos(cliente_id),
-        solicitacoes: n.listarSolicitacoes({ clienteId: cliente_id }),
-        ultimas_mensagens: n.listarConversa(cliente_id).slice(-20),
-      }),
+      executar: async ({ cliente_id }) => {
+        const [cliente, processos, cobrancas, documentos, solicitacoes, conversa] = await Promise.all([
+          n.exigirCliente(cliente_id), n.listarProcessos({ clienteId: cliente_id }), n.listarCobrancas({ clienteId: cliente_id }),
+          n.listarDocumentos(cliente_id), n.listarSolicitacoes({ clienteId: cliente_id }), n.listarConversa(cliente_id),
+        ]);
+        return { cliente, processos, cobrancas, documentos, solicitacoes, ultimas_mensagens: conversa.slice(-20) };
+      },
     },
     {
       nome: 'listar_inadimplentes',

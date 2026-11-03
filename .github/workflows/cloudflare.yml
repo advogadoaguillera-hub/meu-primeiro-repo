@@ -1,0 +1,51 @@
+# Publica o sistema do escritório (pasta app/) no Cloudflare.
+# - Toda mudança aprovada na branch main vai para a VERSÃO DE TESTE.
+# - A VERSÃO OFICIAL só é publicada quando você manda:
+#   GitHub → Actions → "Publicar no Cloudflare" → Run workflow → producao.
+# Configure uma vez em Settings → Secrets and variables → Actions:
+#   CLOUDFLARE_API_TOKEN, CLOUDFLARE_ACCOUNT_ID, GESTOR_EMAIL, GESTOR_SENHA
+#   (opcionais: ANTHROPIC_API_KEY, DATAJUD_API_KEY)
+name: Publicar no Cloudflare
+
+on:
+  push:
+    branches: [main]
+    paths: ['app/**', '.github/workflows/cloudflare.yml']
+  workflow_dispatch:
+    inputs:
+      ambiente:
+        description: 'Onde publicar'
+        type: choice
+        options: [teste, producao]
+        default: teste
+
+concurrency:
+  group: cloudflare-${{ github.event.inputs.ambiente || 'teste' }}
+  cancel-in-progress: false
+
+jobs:
+  publicar:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: app
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: app/package-lock.json
+      - run: npm ci
+      - name: Testes (nada é publicado se algum falhar)
+        run: npm test
+      - name: Publicar
+        run: ./deploy/cloudflare/publicar.sh ${{ github.event.inputs.ambiente || 'teste' }}
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          GESTOR_NOME: Jocsan Aguillera
+          GESTOR_EMAIL: ${{ secrets.GESTOR_EMAIL }}
+          GESTOR_SENHA: ${{ secrets.GESTOR_SENHA }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          DATAJUD_API_KEY: ${{ secrets.DATAJUD_API_KEY }}

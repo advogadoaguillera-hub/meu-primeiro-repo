@@ -319,3 +319,4 @@ code { background: var(--pedra); padding: .1rem .35rem; border-radius: 5px; font
 .barras-dias .coluna { min-width: 22px; }
 .barras-dias b { font-size: .68rem; }
 .barras-dias small { font-size: .62rem; }
+.botao { white-space: nowrap; }

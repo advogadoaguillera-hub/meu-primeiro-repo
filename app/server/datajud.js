@@ -1,13 +1,14 @@
 // Andamento automático: consulta a API Pública do DataJud (CNJ).
 // Documentação oficial: https://datajud-wiki.cnj.jus.br/api-publica/
 // A chave pública é divulgada pelo CNJ nessa página e muda de tempos em tempos;
-// coloque-a em DATAJUD_API_KEY no arquivo .env.
+// coloque-a em DATAJUD_API_KEY (no .env ou nos segredos do Cloudflare).
 //
 // Cada movimento novo vira um andamento do processo, visível ao cliente.
 // Movimentos repetidos são ignorados (mesma data + mesma descrição).
 
-import { abrirBanco } from './db.js';
+import { db } from './banco.js';
 import { registrarAndamento, registrar } from './nucleo.js';
+import { variavel } from './ambiente.js';
 
 const BASE = 'https://api-publica.datajud.cnj.jus.br';
 
@@ -32,14 +33,14 @@ export function aliasDoTribunal(numeroCnj) {
   return null;
 }
 
-export const datajudConfigurado = () => Boolean(process.env.DATAJUD_API_KEY);
+export const datajudConfigurado = () => Boolean(variavel('DATAJUD_API_KEY'));
 
 export async function consultarMovimentos(numeroCnj, { fetchFn = fetch } = {}) {
   const alias = aliasDoTribunal(numeroCnj);
   if (!alias) throw new Error('Tribunal não suportado para consulta automática.');
   const resp = await fetchFn(`${BASE}/api_publica_${alias}/_search`, {
     method: 'POST',
-    headers: { Authorization: `APIKey ${process.env.DATAJUD_API_KEY}`, 'Content-Type': 'application/json' },
+    headers: { Authorization: `APIKey ${variavel('DATAJUD_API_KEY')}`, 'Content-Type': 'application/json' },
     body: JSON.stringify({ query: { match: { numeroProcesso: String(numeroCnj).replace(/\D/g, '') } } }),
     signal: AbortSignal.timeout(20_000),
   });
@@ -60,22 +61,21 @@ export async function consultarMovimentos(numeroCnj, { fetchFn = fetch } = {}) {
 }
 
 export async function sincronizarProcesso(processoId, opcoes) {
-  const db = abrirBanco();
-  const p = db.prepare('SELECT id, numero_cnj FROM processos WHERE id = ?').get(processoId);
+  const p = await db().get('SELECT id, numero_cnj FROM processos WHERE id = ?', processoId);
   if (!p?.numero_cnj) return { novos: 0, motivo: 'Processo sem número CNJ.' };
   const movimentos = await consultarMovimentos(p.numero_cnj, opcoes);
   let novos = 0;
   for (const m of movimentos) {
-    if (registrarAndamento(p.id, { ...m, origem: 'datajud' }, null).inserido) novos += 1;
+    if ((await registrarAndamento(p.id, { ...m, origem: 'datajud' }, null)).inserido) novos += 1;
   }
-  db.prepare("UPDATE processos SET sincronizado_em = datetime('now') WHERE id = ?").run(p.id);
+  await db().run("UPDATE processos SET sincronizado_em = datetime('now') WHERE id = ?", p.id);
   return { novos };
 }
 
 export async function sincronizarTodos(opcoes) {
   if (!datajudConfigurado()) return { processos: 0, novos: 0, erros: [] };
-  const ids = abrirBanco().prepare(
-    "SELECT id FROM processos WHERE status = 'ativo' AND sincronizar = 1 AND numero_cnj IS NOT NULL").all();
+  const ids = await db().all(
+    "SELECT id FROM processos WHERE status = 'ativo' AND sincronizar = 1 AND numero_cnj IS NOT NULL");
   let novos = 0;
   const erros = [];
   for (const { id } of ids) {
@@ -85,6 +85,6 @@ export async function sincronizarTodos(opcoes) {
       erros.push({ processo_id: id, erro: e.message });
     }
   }
-  registrar(null, 'datajud.sincronizacao', { processos: ids.length, novos, erros: erros.length }, 'automacao');
+  await registrar(null, 'datajud.sincronizacao', { processos: ids.length, novos, erros: erros.length }, 'automacao');
   return { processos: ids.length, novos, erros };
 }

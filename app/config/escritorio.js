@@ -24,6 +24,9 @@ export default {
     },
   },
 
+  // Fuso do escritório: define o que é "hoje" para vencimentos e relatórios.
+  fuso: 'America/Campo_Grande',
+
   advogado: {
     nome: 'Jocsan Aguillera',
     oab: 'OAB/MS nº 18.115',

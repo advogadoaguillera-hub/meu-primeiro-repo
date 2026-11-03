@@ -1,20 +1,9 @@
-// Banco de dados: SQLite embutido no próprio Node (node:sqlite).
-// Um único arquivo, sem servidor de banco para instalar ou pagar.
-// O mesmo arquivo é lido pelo aplicativo e pela extensão do Claude (mcp/).
+// Banco de dados com duas "tomadas":
+//   bancoNode(caminho) → SQLite embutido no Node (computador, testes, servidor comum) — em banco-node.js
+//   bancoD1(binding)   → Cloudflare D1 (que também é SQLite)
+// As duas oferecem a mesma interface assíncrona: get, all, run, lote.
 
-import { DatabaseSync } from 'node:sqlite';
-import { mkdirSync } from 'node:fs';
-import { dirname, resolve } from 'node:path';
-import { fileURLToPath } from 'node:url';
-
-const raiz = resolve(dirname(fileURLToPath(import.meta.url)), '..');
-
-export function caminhoDoBanco() {
-  const p = process.env.DB_PATH || 'data/aguillera.db';
-  return p === ':memory:' ? p : resolve(raiz, p);
-}
-
-const ESQUEMA = `
+const ESQUEMA = [`
 CREATE TABLE IF NOT EXISTS usuarios (
   id            INTEGER PRIMARY KEY,
   nome          TEXT NOT NULL,
@@ -28,17 +17,16 @@ CREATE TABLE IF NOT EXISTS usuarios (
   area_interesse TEXT,
   observacoes   TEXT,
   consentimento_lgpd_em TEXT,
+  origem        TEXT,
   criado_em     TEXT NOT NULL DEFAULT (datetime('now')),
   ultimo_acesso TEXT
-);
-
+)`, `
 CREATE TABLE IF NOT EXISTS sessoes (
   token_hash  TEXT PRIMARY KEY,
   usuario_id  INTEGER NOT NULL REFERENCES usuarios(id) ON DELETE CASCADE,
   expira_em   TEXT NOT NULL,
   criado_em   TEXT NOT NULL DEFAULT (datetime('now'))
-);
-
+)`, `
 CREATE TABLE IF NOT EXISTS processos (
   id             INTEGER PRIMARY KEY,
   cliente_id     INTEGER NOT NULL REFERENCES usuarios(id) ON DELETE CASCADE,
@@ -52,8 +40,7 @@ CREATE TABLE IF NOT EXISTS processos (
   sincronizado_em TEXT,
   criado_em      TEXT NOT NULL DEFAULT (datetime('now')),
   atualizado_em  TEXT NOT NULL DEFAULT (datetime('now'))
-);
-
+)`, `
 CREATE TABLE IF NOT EXISTS andamentos (
   id              INTEGER PRIMARY KEY,
   processo_id     INTEGER NOT NULL REFERENCES processos(id) ON DELETE CASCADE,
@@ -65,8 +52,7 @@ CREATE TABLE IF NOT EXISTS andamentos (
   autor_id        INTEGER REFERENCES usuarios(id) ON DELETE SET NULL,
   criado_em       TEXT NOT NULL DEFAULT (datetime('now')),
   UNIQUE (processo_id, data, descricao)
-);
-
+)`, `
 CREATE TABLE IF NOT EXISTS mensagens (
   id           INTEGER PRIMARY KEY,
   cliente_id   INTEGER NOT NULL REFERENCES usuarios(id) ON DELETE CASCADE,
@@ -75,8 +61,7 @@ CREATE TABLE IF NOT EXISTS mensagens (
   do_escritorio INTEGER NOT NULL DEFAULT 0,
   lida         INTEGER NOT NULL DEFAULT 0,
   criado_em    TEXT NOT NULL DEFAULT (datetime('now'))
-);
-
+)`, `
 CREATE TABLE IF NOT EXISTS documentos (
   id          INTEGER PRIMARY KEY,
   cliente_id  INTEGER NOT NULL REFERENCES usuarios(id) ON DELETE CASCADE,
@@ -90,8 +75,7 @@ CREATE TABLE IF NOT EXISTS documentos (
   enviado_por INTEGER REFERENCES usuarios(id) ON DELETE SET NULL,
   status      TEXT NOT NULL DEFAULT 'disponivel' CHECK (status IN ('disponivel','aguardando_assinatura','assinado')),
   criado_em   TEXT NOT NULL DEFAULT (datetime('now'))
-);
-
+)`, `
 CREATE TABLE IF NOT EXISTS cobrancas (
   id             INTEGER PRIMARY KEY,
   cliente_id     INTEGER NOT NULL REFERENCES usuarios(id) ON DELETE CASCADE,
@@ -103,8 +87,7 @@ CREATE TABLE IF NOT EXISTS cobrancas (
   pago_em        TEXT,
   link_pagamento TEXT,
   criado_em      TEXT NOT NULL DEFAULT (datetime('now'))
-);
-
+)`, `
 CREATE TABLE IF NOT EXISTS solicitacoes (
   id          INTEGER PRIMARY KEY,
   cliente_id  INTEGER NOT NULL REFERENCES usuarios(id) ON DELETE CASCADE,
@@ -115,8 +98,7 @@ CREATE TABLE IF NOT EXISTS solicitacoes (
   resposta    TEXT,
   criado_em   TEXT NOT NULL DEFAULT (datetime('now')),
   atualizado_em TEXT NOT NULL DEFAULT (datetime('now'))
-);
-
+)`, `
 CREATE TABLE IF NOT EXISTS auditoria (
   id         INTEGER PRIMARY KEY,
   usuario_id INTEGER,
@@ -124,10 +106,10 @@ CREATE TABLE IF NOT EXISTS auditoria (
   acao       TEXT NOT NULL,
   detalhe    TEXT,
   criado_em  TEXT NOT NULL DEFAULT (datetime('now'))
-);
-
--- Visitas ao site, já somadas por dia/página/fonte. Nada identifica a pessoa:
--- sem IP, sem cookie, sem nome. Basta para saber o que é visto e de onde vêm.
+)`,
+// Visitas ao site, já somadas por dia/página/fonte. Nada identifica a pessoa:
+// sem IP, sem cookie, sem nome. Basta para saber o que é visto e de onde vêm.
+`
 CREATE TABLE IF NOT EXISTS visitas (
   dia        TEXT NOT NULL,
   pagina     TEXT NOT NULL,
@@ -135,50 +117,70 @@ CREATE TABLE IF NOT EXISTS visitas (
   vistas     INTEGER NOT NULL DEFAULT 0,
   visitantes INTEGER NOT NULL DEFAULT 0,
   PRIMARY KEY (dia, pagina, fonte)
-);
+)`,
+// Chaves para o Claude (Desktop/Code) operar o sistema em nome de alguém do escritório.
+`
+CREATE TABLE IF NOT EXISTS chaves_api (
+  id          INTEGER PRIMARY KEY,
+  token_hash  TEXT NOT NULL UNIQUE,
+  usuario_id  INTEGER NOT NULL REFERENCES usuarios(id) ON DELETE CASCADE,
+  nome        TEXT NOT NULL,
+  criado_em   TEXT NOT NULL DEFAULT (datetime('now')),
+  ultimo_uso  TEXT
+)`,
+'CREATE INDEX IF NOT EXISTS ix_processos_cliente ON processos(cliente_id)',
+'CREATE INDEX IF NOT EXISTS ix_andamentos_processo ON andamentos(processo_id, data)',
+'CREATE INDEX IF NOT EXISTS ix_mensagens_cliente ON mensagens(cliente_id, criado_em)',
+'CREATE INDEX IF NOT EXISTS ix_documentos_cliente ON documentos(cliente_id)',
+'CREATE INDEX IF NOT EXISTS ix_cobrancas_cliente ON cobrancas(cliente_id, vencimento)',
+'CREATE INDEX IF NOT EXISTS ix_solicitacoes_status ON solicitacoes(status)',
+];
 
-CREATE INDEX IF NOT EXISTS ix_processos_cliente ON processos(cliente_id);
-CREATE INDEX IF NOT EXISTS ix_andamentos_processo ON andamentos(processo_id, data);
-CREATE INDEX IF NOT EXISTS ix_mensagens_cliente ON mensagens(cliente_id, criado_em);
-CREATE INDEX IF NOT EXISTS ix_documentos_cliente ON documentos(cliente_id);
-CREATE INDEX IF NOT EXISTS ix_cobrancas_cliente ON cobrancas(cliente_id, vencimento);
-CREATE INDEX IF NOT EXISTS ix_solicitacoes_status ON solicitacoes(status);
-`;
+// undefined e booleanos viram valores que os dois bancos aceitam.
+export const valores = (args) => args.map((v) => (v === undefined ? null : typeof v === 'boolean' ? (v ? 1 : 0) : v));
 
-let banco;
-
-export function abrirBanco() {
-  if (banco) return banco;
-  const caminho = caminhoDoBanco();
-  if (caminho !== ':memory:') mkdirSync(dirname(caminho), { recursive: true });
-  banco = new DatabaseSync(caminho);
-  banco.exec('PRAGMA journal_mode = WAL; PRAGMA foreign_keys = ON; PRAGMA busy_timeout = 5000;');
-  banco.exec(ESQUEMA);
-  migrar(banco);
-  return banco;
+export function bancoD1(d1) {
+  const st = (sql, a) => d1.prepare(sql).bind(...valores(a));
+  return {
+    tipo: 'd1',
+    get: async (sql, ...a) => (await st(sql, a).first()) ?? null,
+    all: async (sql, ...a) => (await st(sql, a).all()).results,
+    run: async (sql, ...a) => {
+      const r = await st(sql, a).run();
+      return { changes: r.meta.changes, id: r.meta.last_row_id };
+    },
+    lote: async (lista) => (await d1.batch(lista.map(([sql, ...a]) => st(sql, a))))
+      .map((r) => ({ changes: r.meta.changes, id: r.meta.last_row_id })),
+    colunas: async (tabela) => (await d1.prepare(`PRAGMA table_info(${tabela})`).all()).results.map((c) => c.name),
+    fechar: () => {},
+  };
 }
 
-// Colunas acrescentadas depois da primeira versão: bancos antigos ganham a coluna sem perder nada.
-function migrar(db) {
-  const colunas = (t) => db.prepare(`PRAGMA table_info(${t})`).all().map((c) => c.name);
-  if (!colunas('usuarios').includes('origem')) db.exec('ALTER TABLE usuarios ADD COLUMN origem TEXT');
+let atual = null;
+let pronto = null;
+
+export function usarBanco(b) {
+  if (b !== atual) pronto = null;
+  atual = b;
+}
+
+export const db = () => {
+  if (!atual) throw new Error('Banco não configurado.');
+  return atual;
+};
+
+// Cria as tabelas (uma vez por inicialização) e acrescenta colunas novas em bancos antigos.
+export function prepararBanco() {
+  pronto ??= (async () => {
+    const b = db();
+    for (const sql of ESQUEMA) await b.run(sql);
+    if (!(await b.colunas('usuarios')).includes('origem')) await b.run('ALTER TABLE usuarios ADD COLUMN origem TEXT');
+  })().catch((e) => { pronto = null; throw e; });
+  return pronto;
 }
 
 export function fecharBanco() {
-  if (banco) banco.close();
-  banco = undefined;
-}
-
-// Executa várias escritas como uma só: ou tudo grava, ou nada grava.
-export function transacao(fn) {
-  const db = abrirBanco();
-  db.exec('BEGIN');
-  try {
-    const r = fn(db);
-    db.exec('COMMIT');
-    return r;
-  } catch (e) {
-    db.exec('ROLLBACK');
-    throw e;
-  }
+  atual?.fechar();
+  atual = null;
+  pronto = null;
 }

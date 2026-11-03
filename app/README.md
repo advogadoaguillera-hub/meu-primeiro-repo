@@ -72,7 +72,11 @@ npm start
 Na primeira execução o gestor é criado com os dados do `.env`. Entre, troque a senha em
 *Minha conta* e apague `GESTOR_SENHA` do `.env`.
 
-**Passo a passo pronto para o Google Cloud** (servidor gratuito, um comando instala tudo, backup diário e HTTPS automático): [`deploy/servidor/GUIA-GOOGLE-CLOUD.md`](deploy/servidor/GUIA-GOOGLE-CLOUD.md).
+**Recomendado: Cloudflare** (site e sistema sempre no ar, sem servidor para cuidar, versão de
+teste antes da oficial, publicação automática pelo GitHub):
+[`deploy/cloudflare/GUIA-CLOUDFLARE.md`](deploy/cloudflare/GUIA-CLOUDFLARE.md).
+
+**Alternativa: Google Cloud.** **Passo a passo pronto para o Google Cloud** (servidor gratuito, um comando instala tudo, backup diário e HTTPS automático): [`deploy/servidor/GUIA-GOOGLE-CLOUD.md`](deploy/servidor/GUIA-GOOGLE-CLOUD.md).
 
 **Hospedagem** — qualquer serviço que rode Node.js com disco persistente: Railway, Render,
 Fly.io ou um servidor próprio (VPS) com Caddy para o HTTPS. Exigências:
@@ -124,13 +128,20 @@ adequado antes de desistir (*fallback* automático).
 
 ## 5. Usar o escritório de dentro do Claude (extensão MCP)
 
-A extensão roda **na máquina onde está o banco** e age em nome do gestor (ou de quem estiver
-em `MCP_USUARIO_EMAIL` no `.env`).
+A extensão usa **a sua assinatura do Claude** (não precisa da chave da API) e conversa
+com o sistema onde ele estiver: Cloudflare, Google ou o seu computador.
+
+1. No sistema, entre como gestor → **Minha conta → Chaves do Claude → Nova chave**. Copie
+   a chave (aparece uma vez só).
+2. No computador onde está o Claude, baixe este repositório e rode `npm install` na pasta `app`.
 
 **Claude Code:**
 
 ```bash
-claude mcp add aguillera -- node /caminho/completo/para/app/mcp/server.js
+claude mcp add aguillera \
+  -e AGUILLERA_URL=https://area.aguillera.art.br \
+  -e AGUILLERA_CHAVE=agl_sua_chave \
+  -- node /caminho/completo/para/app/mcp/server.js
 ```
 
 **Claude Desktop** — em *Configurações → Desenvolvedor → Editar configuração*, acrescente:
@@ -140,11 +151,18 @@ claude mcp add aguillera -- node /caminho/completo/para/app/mcp/server.js
   "mcpServers": {
     "aguillera": {
       "command": "node",
-      "args": ["/caminho/completo/para/app/mcp/server.js"]
+      "args": ["/caminho/completo/para/app/mcp/server.js"],
+      "env": {
+        "AGUILLERA_URL": "https://area.aguillera.art.br",
+        "AGUILLERA_CHAVE": "agl_sua_chave"
+      }
     }
   }
 }
 ```
+
+Tudo o que o Claude fizer aparece no registro de atividades com a marca *Claude*, em nome
+de quem criou a chave. Apagar a chave corta o acesso na hora.
 
 Depois é só pedir: *"Claude, quais clientes mandaram mensagem e ainda não respondemos?"*
 
@@ -161,7 +179,7 @@ etapa 4 da fila de evolução.
 
 ## 7. Segurança, sigilo, LGPD e OAB
 
-- Senhas com *scrypt*; sessão em cookie `HttpOnly`/`SameSite`; proteção contra requisição
+- Senhas com *PBKDF2* (100 mil rodadas); sessão em cookie `HttpOnly`/`SameSite`; proteção contra requisição
   forjada; política de segurança de conteúdo (CSP) restrita; limite de tentativas de login.
 - Cliente só enxerga o que é dele. **Notas internas** do processo nunca aparecem para ele.
 - Arquivos: só PDF, imagem e Word, até 15 MB, guardados com nome aleatório e entregues
@@ -192,17 +210,21 @@ automática"*.
 app/
 ├── config/escritorio.js   ← identidade do escritório (troque para licenciar)
 ├── server/
-│   ├── index.js           início do servidor e consulta periódica aos tribunais
-│   ├── app.js             rotas da API e das telas
+│   ├── worker.js          início no Cloudflare (D1 + R2 + rotina dos tribunais)
+│   ├── index.js · node.js início no Node (computador, Google Cloud, testes)
+│   ├── app.js             rotas da API (Hono: roda igual nos dois)
 │   ├── nucleo.js          regras do escritório — única porta para os dados
-│   ├── auth.js            login, senhas, papéis
+│   ├── auth.js            login, senhas, papéis, chaves do Claude
 │   ├── ferramentas.js     o que o Claude pode fazer (app e MCP)
 │   ├── claude.js          assistente, sugestão de resposta, explicação
 │   ├── datajud.js         andamentos automáticos (CNJ)
-│   ├── db.js              banco SQLite embutido
-│   └── demo.js            dados de demonstração
-├── mcp/server.js          extensão do Claude (MCP)
+│   ├── banco*.js          banco: D1 no Cloudflare, SQLite no Node
+│   ├── arquivos*.js       documentos: R2 no Cloudflare, pasta no Node
+│   └── demo*.js           dados de demonstração
+├── mcp/server.js          extensão do Claude (MCP), fala com o sistema por chave de acesso
 ├── public/                telas (HTML, CSS e JavaScript puros), ícones, PWA
+├── deploy/                guias e scripts: Cloudflare (recomendado) e Google Cloud
+├── wrangler.jsonc         configuração do Cloudflare
 └── test/api.test.js       testes de ponta a ponta — rode com `npm test`
 ```
 

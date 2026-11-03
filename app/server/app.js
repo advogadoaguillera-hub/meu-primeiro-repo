@@ -1,20 +1,21 @@
-// Monta o aplicativo web: API em /api e telas em /.
+// A API do aplicativo (/api/...). Feita com Hono, que roda igual no Node
+// (computador, servidor comum, testes) e no Cloudflare Workers.
+// As telas (pasta public/) são servidas por quem monta o app: server/node.js
+// ou o próprio Cloudflare.
 
-import express from 'express';
-import multer from 'multer';
-import { randomBytes } from 'node:crypto';
-import { mkdirSync, existsSync, unlinkSync } from 'node:fs';
-import { resolve, dirname } from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { Hono } from 'hono';
+import { bodyLimit } from 'hono/body-limit';
 
 import escritorio from '../config/escritorio.js';
 import * as n from './nucleo.js';
 import * as auth from './auth.js';
 import * as ia from './claude.js';
 import * as datajud from './datajud.js';
+import { ferramentas } from './ferramentas.js';
+import { arquivos } from './arquivos.js';
+import { variavel } from './ambiente.js';
+import { prepararBanco } from './banco.js';
 
-const raiz = resolve(dirname(fileURLToPath(import.meta.url)), '..');
-const PASTA_ARQUIVOS = resolve(raiz, process.env.UPLOADS_DIR || 'data/arquivos');
 const TIPOS_ACEITOS = {
   'application/pdf': '.pdf',
   'image/jpeg': '.jpg',
@@ -23,17 +24,21 @@ const TIPOS_ACEITOS = {
   'application/vnd.openxmlformats-officedocument.wordprocessingml.document': '.docx',
   'application/msword': '.doc',
 };
+const LIMITE_ARQUIVO = 15 * 1024 * 1024;
 
-// Envolve rotas assíncronas para que qualquer erro chegue ao tratador final.
-const r = (fn) => (req, res, next) => Promise.resolve(fn(req, res, next)).catch(next);
 const id = (v) => {
   const x = Number(v);
   if (!Number.isInteger(x) || x <= 0) throw new n.ErroDeRegra('Identificador inválido.', 400);
   return x;
 };
 
+// Corpo JSON do pedido (vazio ou inválido vira {}).
+async function corpo(c) {
+  try { return (await c.req.json()) || {}; } catch { return {}; }
+}
+
 // Endereços do site que podem registrar visitas: o site do escritório (com e sem www)
-// e, para testes no computador, os de SITE_ORIGENS no .env (separados por vírgula).
+// e, para testes, os de SITE_ORIGENS (separados por vírgula).
 function origensPermitidas() {
   const lista = new Set();
   try {
@@ -42,279 +47,309 @@ function origensPermitidas() {
     lista.add(`${u.protocol}//${semWww}`);
     lista.add(`${u.protocol}//www.${semWww}`);
   } catch { /* site ainda não configurado */ }
-  for (const o of String(process.env.SITE_ORIGENS || '').split(',')) if (o.trim()) lista.add(o.trim().replace(/\/$/, ''));
+  for (const o of variavel('SITE_ORIGENS').split(',')) if (o.trim()) lista.add(o.trim().replace(/\/$/, ''));
   return lista;
 }
+const hostDoSite = () => { try { return new URL(escritorio.links.site).hostname.replace(/^www\./, ''); } catch { return ''; } };
 
-export function criarApp() {
-  mkdirSync(PASTA_ARQUIVOS, { recursive: true });
-  const app = express();
-  app.disable('x-powered-by');
-  // Só confie no IP repassado se houver proxy de verdade na frente (Render, Railway, Caddy…);
-  // sem proxy, um X-Forwarded-For falso burlaria o limite de tentativas de login.
-  if (process.env.TRUST_PROXY) app.set('trust proxy', Number(process.env.TRUST_PROXY) || process.env.TRUST_PROXY);
+// Arquivo enviado (formulário com campo "arquivo"): confere e guarda com nome sorteado.
+async function receberArquivo(c) {
+  const form = await c.req.parseBody();
+  const arq = form.arquivo;
+  if (!arq || typeof arq === 'string' || !arq.size) throw new n.ErroDeRegra('Escolha um arquivo.');
+  if (arq.size > LIMITE_ARQUIVO) throw new n.ErroDeRegra('Arquivo maior que 15 MB.');
+  const ext = TIPOS_ACEITOS[arq.type];
+  if (!ext) throw new n.ErroDeRegra('Envie PDF, imagem (JPG/PNG/WEBP) ou Word.');
+  const sorteio = [...crypto.getRandomValues(new Uint8Array(18))].map((b) => b.toString(16).padStart(2, '0')).join('');
+  const nome = sorteio + ext;
+  await arquivos().salvar(nome, await arq.arrayBuffer(), arq.type);
+  return { form, arquivo: nome, nome_original: String(arq.name || 'arquivo').slice(0, 200), mime: arq.type, tamanho: arq.size };
+}
 
-  app.use((_req, res, next) => {
-    res.setHeader('X-Content-Type-Options', 'nosniff');
-    res.setHeader('Referrer-Policy', 'same-origin');
-    res.setHeader('X-Frame-Options', 'DENY');
-    res.setHeader('Content-Security-Policy',
-      "default-src 'self'; img-src 'self' data:; style-src 'self'; script-src 'self'; connect-src 'self'; font-src 'self'; frame-ancestors 'none'; base-uri 'none'; form-action 'self'");
-    next();
+/**
+ * @param {{ ipDe: (c) => string, cookieSeguro: (c) => boolean }} opcoes
+ */
+export function criarApp({ ipDe = () => '', cookieSeguro = () => true } = {}) {
+  const app = new Hono();
+  const api = new Hono();
+
+  // Cabeçalhos de segurança em toda resposta da API.
+  app.use('*', async (c, next) => {
+    await next();
+    c.header('X-Content-Type-Options', 'nosniff');
+    c.header('Referrer-Policy', 'same-origin');
+    c.header('X-Frame-Options', 'DENY');
+    c.header('Cache-Control', c.res.headers.get('Cache-Control') || 'no-store');
   });
 
-  app.use(express.json({ limit: '1mb' }));
-  app.use(auth.identificar);
+  // Banco pronto (tabelas criadas) antes de qualquer pedido.
+  app.use('/api/*', async (_c, next) => { await prepararBanco(); await next(); });
 
-  // Contador de visitas do site (aguillera.art.br). Vem de outro endereço, por isso
-  // fica antes da proteção CSRF; só aceita o próprio site e não grava dado pessoal.
-  const origensDoSite = origensPermitidas();
-  const hostDoSite = (() => { try { return new URL(escritorio.links.site).hostname.replace(/^www\./, ''); } catch { return ''; } })();
+  // ---------------------------------------------------------- contador de visitas do site
+  // Vem de outro endereço (aguillera.art.br), por isso fica antes da proteção CSRF;
+  // só aceita o próprio site e não grava dado pessoal.
   const ritmo = new Map();
-  app.options('/api/visita', (req, res) => {
-    const o = req.get('Origin');
-    if (origensDoSite.has(o)) res.setHeader('Access-Control-Allow-Origin', o);
-    res.setHeader('Access-Control-Allow-Methods', 'POST');
-    res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
-    res.status(204).end();
+  app.options('/api/visita', (c) => {
+    const o = c.req.header('Origin');
+    if (origensPermitidas().has(o)) c.header('Access-Control-Allow-Origin', o);
+    c.header('Access-Control-Allow-Methods', 'POST');
+    c.header('Access-Control-Allow-Headers', 'Content-Type');
+    return c.body(null, 204);
   });
-  app.post('/api/visita', express.text({ type: '*/*', limit: '2kb' }), (req, res) => {
-    const origem = req.get('Origin') || (() => { try { return new URL(req.get('Referer')).origin; } catch { return ''; } })();
-    if (!origensDoSite.has(origem)) return res.status(403).end();
-    res.setHeader('Access-Control-Allow-Origin', origem);
-    const minuto = Math.floor(Date.now() / 60_000);
-    const chave = `${req.ip}|${minuto}`;
+  app.post('/api/visita', bodyLimit({ maxSize: 2048 }), async (c) => {
+    const origem = c.req.header('Origin') || (() => { try { return new URL(c.req.header('Referer')).origin; } catch { return ''; } })();
+    if (!origensPermitidas().has(origem)) return c.body(null, 403);
+    c.header('Access-Control-Allow-Origin', origem);
+    const chave = `${ipDe(c)}|${Math.floor(Date.now() / 60_000)}`;
     const qtd = (ritmo.get(chave) || 0) + 1;
     ritmo.set(chave, qtd);
     if (ritmo.size > 5000) ritmo.clear();
-    if (qtd > 60) return res.status(429).end();
+    if (qtd > 60) return c.body(null, 429);
     try {
-      const d = JSON.parse(req.body || '{}');
-      n.registrarVisita({ pagina: d.pagina, fonte: n.fonteDaVisita(d.referencia, hostDoSite), nova: Boolean(d.nova) });
-      res.status(204).end();
+      const d = JSON.parse((await c.req.text()) || '{}');
+      await n.registrarVisita({ pagina: d.pagina, fonte: n.fonteDaVisita(d.referencia, hostDoSite()), nova: Boolean(d.nova) });
+      return c.body(null, 204);
     } catch {
-      res.status(400).end();
+      return c.body(null, 400);
     }
   });
 
-  // Proteção contra requisições forjadas (CSRF): toda escrita na API precisa
-  // do cabeçalho X-Aguillera, que só o próprio aplicativo envia.
-  app.use('/api', (req, _res, next) => {
-    if (['GET', 'HEAD', 'OPTIONS'].includes(req.method)) return next();
-    next(req.get('X-Aguillera') === '1' ? undefined : new n.ErroDeRegra('Requisição recusada.', 403));
+  // ---------------------------------------------------------- quem está pedindo
+  api.use('*', async (c, next) => {
+    const quem = await auth.identificar({ cookie: c.req.header('Cookie'), autorizacao: c.req.header('Authorization') });
+    c.set('usuario', quem.usuario);
+    c.set('token', quem.token);
+    c.set('porChave', quem.porChave);
+    // Proteção contra requisições forjadas (CSRF): escrita feita pelo navegador precisa
+    // do cabeçalho X-Aguillera, que só o próprio aplicativo envia. Chave de acesso dispensa.
+    if (!['GET', 'HEAD', 'OPTIONS'].includes(c.req.method) && !quem.porChave && c.req.header('X-Aguillera') !== '1') {
+      throw new n.ErroDeRegra('Requisição recusada.', 403);
+    }
+    await next();
+  });
+  // Uploads aceitam até 20 MB; o resto, até 1 MB.
+  api.use('*', async (c, next) => {
+    const limite = c.req.path.endsWith('/documentos') && c.req.method === 'POST' ? 20 * 1024 * 1024 : 1024 * 1024;
+    return bodyLimit({ maxSize: limite, onError: () => { throw new n.ErroDeRegra('Arquivo maior que 15 MB.', 413); } })(c, next);
   });
 
-  const api = express.Router();
-  app.use('/api', api);
+  const exigir = (teste, msg, status) => async (c, next) => {
+    if (!teste(c.get('usuario'))) throw new n.ErroDeRegra(msg, status);
+    await next();
+  };
+  const logado = exigir((u) => u, 'Entre na sua conta para continuar.', 401);
+  const doEscritorio = exigir(auth.ehEscritorio, 'Acesso restrito ao escritório.', 403);
+  const soGestor = exigir((u) => u?.papel === 'gestor', 'Apenas o gestor pode fazer isso.', 403);
+  const soCliente = exigir((u) => u?.papel === 'cliente', 'Área do cliente.', 403);
 
-  const upload = multer({
-    storage: multer.diskStorage({
-      destination: PASTA_ARQUIVOS,
-      filename: (_req, file, cb) => cb(null, randomBytes(18).toString('hex') + (TIPOS_ACEITOS[file.mimetype] || '')),
-    }),
-    limits: { fileSize: 15 * 1024 * 1024, files: 1 },
-    fileFilter: (_req, file, cb) => cb(TIPOS_ACEITOS[file.mimetype] ? null : new n.ErroDeRegra('Envie PDF, imagem (JPG/PNG/WEBP) ou Word.'), Boolean(TIPOS_ACEITOS[file.mimetype])),
-  });
-
-  // ------------------------------------------------------------ público
-  api.get('/marca', (_req, res) => {
+  // ---------------------------------------------------------- público
+  api.get('/marca', (c) => {
     const { pagamento, ...publico } = escritorio;
-    res.json({ ...publico, pagamento, recursos: { claude: ia.claudeConfigurado(), datajud: datajud.datajudConfigurado() } });
+    return c.json({ ...publico, pagamento, recursos: { claude: ia.claudeConfigurado(), datajud: datajud.datajudConfigurado() } });
   });
 
-  api.post('/cadastro', r((req, res) => {
-    const b = req.body || {};
+  api.post('/cadastro', async (c) => {
+    const b = await corpo(c);
     if (!b.consentimento) throw new n.ErroDeRegra('É preciso concordar com o tratamento dos dados (LGPD) para criar a conta.');
-    auth.criarUsuario({ ...b, papel: 'cliente' });
-    const { token, usuario } = auth.entrar(b.email, b.senha, req.ip);
-    auth.gravarCookie(res, token);
-    res.status(201).json({ usuario });
-  }));
-
-  api.post('/entrar', r((req, res) => {
-    const { token, usuario } = auth.entrar(req.body?.email, req.body?.senha, req.ip);
-    auth.gravarCookie(res, token);
-    res.json({ usuario });
-  }));
-
-  api.post('/sair', (req, res) => {
-    auth.sair(req.token);
-    auth.gravarCookie(res, null);
-    res.json({ ok: true });
+    await auth.criarUsuario({ ...b, papel: 'cliente' });
+    const { token, usuario } = await auth.entrar(b.email, b.senha, ipDe(c));
+    c.header('Set-Cookie', auth.textoCookie(token, cookieSeguro(c)));
+    return c.json({ usuario }, 201);
   });
 
-  api.get('/eu', (req, res) => {
-    res.json({ usuario: req.usuario ? n.buscarProprio(req.usuario.id) : null });
+  api.post('/entrar', async (c) => {
+    const b = await corpo(c);
+    const { token, usuario } = await auth.entrar(b.email, b.senha, ipDe(c));
+    c.header('Set-Cookie', auth.textoCookie(token, cookieSeguro(c)));
+    return c.json({ usuario });
   });
 
-  // ------------------------------------------------------------ conta (qualquer pessoa logada)
-  api.use(auth.exigirLogin);
+  api.post('/sair', async (c) => {
+    await auth.sair(c.get('token'));
+    c.header('Set-Cookie', auth.textoCookie(null, cookieSeguro(c)));
+    return c.json({ ok: true });
+  });
 
-  api.patch('/eu', r((req, res) => {
-    res.json({ usuario: n.atualizarProprioPerfil(req.usuario, req.body || {}) });
-  }));
+  api.get('/eu', async (c) => c.json({ usuario: c.get('usuario') ? await n.buscarProprio(c.get('usuario').id) : null }));
 
-  api.post('/eu/senha', r((req, res) => {
-    auth.trocarSenha(req.usuario.id, req.body?.atual, req.body?.nova, req.token);
-    res.json({ ok: true });
-  }));
+  // ---------------------------------------------------------- conta (qualquer pessoa logada)
+  api.patch('/eu', logado, async (c) => c.json({ usuario: await n.atualizarProprioPerfil(c.get('usuario'), await corpo(c)) }));
+  api.post('/eu/senha', logado, async (c) => {
+    const b = await corpo(c);
+    await auth.trocarSenha(c.get('usuario').id, b.atual, b.nova, c.get('token'));
+    return c.json({ ok: true });
+  });
 
-  // ------------------------------------------------------------ área do cliente
-  const cliente = express.Router();
-  api.use('/cliente', (req, _res, next) => next(req.usuario.papel === 'cliente' ? undefined : new n.ErroDeRegra('Área do cliente.', 403)), cliente);
-
-  cliente.get('/inicio', (req, res) => res.json(n.inicioDoCliente(req.usuario.id)));
-  cliente.get('/processos', (req, res) => res.json(n.listarProcessos({ clienteId: req.usuario.id, apenasVisivel: true })));
-  cliente.get('/processos/:id', r((req, res) => {
-    const p = n.buscarProcesso(id(req.params.id), { apenasVisivel: true });
-    if (p.cliente_id !== req.usuario.id) throw new n.ErroDeRegra('Processo não encontrado.', 404);
-    res.json(p);
-  }));
-  cliente.get('/mensagens', r((req, res) => {
-    n.marcarLidas(req.usuario.id, false);
-    res.json(n.listarConversa(req.usuario.id));
-  }));
-  cliente.post('/mensagens', r((req, res) => res.status(201).json(n.enviarMensagem(req.usuario.id, req.usuario.id, req.body?.texto, false))));
-  cliente.get('/documentos', (req, res) => res.json(n.listarDocumentos(req.usuario.id)));
-  cliente.post('/documentos', upload.single('arquivo'), r((req, res) => {
-    if (!req.file) throw new n.ErroDeRegra('Escolha um arquivo.');
-    const tipo = ['documento_pessoal', 'comprovante', 'outro'].includes(req.body?.tipo) ? req.body.tipo : 'outro';
-    res.status(201).json(n.criarDocumento({
-      cliente_id: req.usuario.id, tipo, titulo: String(req.body?.titulo || '').slice(0, 200) || n.TIPOS_DOCUMENTO[tipo],
-      arquivo: req.file.filename, nome_original: req.file.originalname.slice(0, 200), mime: req.file.mimetype, tamanho: req.file.size,
-    }, req.usuario.id));
-  }));
-  cliente.get('/cobrancas', (req, res) => res.json(n.listarCobrancas({ clienteId: req.usuario.id })));
-  cliente.get('/solicitacoes', (req, res) => res.json(n.listarSolicitacoes({ clienteId: req.usuario.id })));
-  cliente.post('/solicitacoes', r((req, res) => res.status(201).json(n.criarSolicitacao(req.usuario.id, req.body || {}))));
-
-  // ------------------------------------------------------------ download de documento (cliente dono ou escritório)
-  api.get('/documentos/:id/arquivo', r((req, res) => {
-    const d = n.buscarDocumento(id(req.params.id));
-    if (!auth.podeVerCliente(req.usuario, d.cliente_id)) throw new n.ErroDeRegra('Documento não encontrado.', 404);
-    const caminho = resolve(PASTA_ARQUIVOS, d.arquivo);
-    if (!caminho.startsWith(PASTA_ARQUIVOS) || !existsSync(caminho)) throw new n.ErroDeRegra('Arquivo indisponível.', 404);
-    const nome = d.nome_original.replace(/[^\w.\- À-ú]/g, '_');
-    res.setHeader('Content-Disposition', `${req.query.ver ? 'inline' : 'attachment'}; filename*=UTF-8''${encodeURIComponent(nome)}`);
-    res.type(d.mime).sendFile(caminho);
-  }));
-
-  // ------------------------------------------------------------ escritório (gestor + equipe)
-  const esc = express.Router();
-  api.use('/escritorio', auth.exigirEscritorio, esc);
-
-  esc.get('/painel', (_req, res) => res.json(n.painel()));
-  esc.get('/site', (req, res) => res.json(n.relatorioSite(req.query.dias)));
-
-  esc.get('/clientes', (req, res) => res.json(n.listarClientes({ busca: String(req.query.busca || ''), situacao: String(req.query.situacao || 'todos') })));
-  esc.post('/clientes', r((req, res) => {
-    const novo = auth.criarUsuario({ ...req.body, papel: 'cliente' }, req.usuario.id);
-    res.status(201).json(novo);
-  }));
-  esc.get('/clientes/:id', r((req, res) => {
-    const cid = id(req.params.id);
-    res.json({
-      cliente: n.exigirCliente(cid),
-      processos: n.listarProcessos({ clienteId: cid }),
-      cobrancas: n.listarCobrancas({ clienteId: cid }),
-      documentos: n.listarDocumentos(cid),
-      solicitacoes: n.listarSolicitacoes({ clienteId: cid }),
-    });
-  }));
-  esc.patch('/clientes/:id', r((req, res) => res.json(n.atualizarCliente(id(req.params.id), req.body || {}, req.usuario.id))));
-
-  esc.get('/processos', (req, res) => res.json(n.listarProcessos({ busca: String(req.query.busca || ''), status: req.query.status || undefined })));
-  esc.post('/processos', r((req, res) => res.status(201).json(n.criarProcesso(req.body || {}, req.usuario.id))));
-  esc.get('/processos/:id', r((req, res) => res.json(n.buscarProcesso(id(req.params.id)))));
-  esc.patch('/processos/:id', r((req, res) => res.json(n.atualizarProcesso(id(req.params.id), req.body || {}, req.usuario.id))));
-  esc.post('/processos/:id/andamentos', r((req, res) => {
-    const pid = id(req.params.id);
-    const { inserido } = n.registrarAndamento(pid, { ...req.body, origem: 'manual' }, req.usuario.id);
-    if (!inserido) throw new n.ErroDeRegra('Este andamento já está lançado.', 409);
-    res.status(201).json(n.buscarProcesso(pid));
-  }));
-  esc.patch('/andamentos/:id', r((req, res) => res.json(n.editarAndamento(id(req.params.id), req.body || {}, req.usuario.id))));
-  esc.post('/processos/:id/sincronizar', r(async (req, res) => {
-    if (!datajud.datajudConfigurado()) throw new n.ErroDeRegra('Consulta automática desligada. Configure DATAJUD_API_KEY no .env.', 503);
+  // ---------------------------------------------------------- área do cliente
+  const cli = new Hono();
+  cli.use('*', logado, soCliente);
+  const eu = (c) => c.get('usuario').id;
+  cli.get('/inicio', async (c) => c.json(await n.inicioDoCliente(eu(c))));
+  cli.get('/processos', async (c) => c.json(await n.listarProcessos({ clienteId: eu(c), apenasVisivel: true })));
+  cli.get('/processos/:id', async (c) => {
+    const p = await n.buscarProcesso(id(c.req.param('id')), { apenasVisivel: true });
+    if (p.cliente_id !== eu(c)) throw new n.ErroDeRegra('Processo não encontrado.', 404);
+    return c.json(p);
+  });
+  cli.get('/mensagens', async (c) => {
+    await n.marcarLidas(eu(c), false);
+    return c.json(await n.listarConversa(eu(c)));
+  });
+  cli.post('/mensagens', async (c) => c.json(await n.enviarMensagem(eu(c), eu(c), (await corpo(c)).texto, false), 201));
+  cli.get('/documentos', async (c) => c.json(await n.listarDocumentos(eu(c))));
+  cli.post('/documentos', async (c) => {
+    const r = await receberArquivo(c);
+    const tipo = ['documento_pessoal', 'comprovante', 'outro'].includes(r.form.tipo) ? r.form.tipo : 'outro';
     try {
-      res.json(await datajud.sincronizarProcesso(id(req.params.id)));
+      return c.json(await n.criarDocumento({
+        cliente_id: eu(c), tipo, titulo: String(r.form.titulo || '').slice(0, 200) || n.TIPOS_DOCUMENTO[tipo],
+        arquivo: r.arquivo, nome_original: r.nome_original, mime: r.mime, tamanho: r.tamanho,
+      }, eu(c)), 201);
+    } catch (e) {
+      await arquivos().apagar(r.arquivo);
+      throw e;
+    }
+  });
+  cli.get('/cobrancas', async (c) => c.json(await n.listarCobrancas({ clienteId: eu(c) })));
+  cli.get('/solicitacoes', async (c) => c.json(await n.listarSolicitacoes({ clienteId: eu(c) })));
+  cli.post('/solicitacoes', async (c) => c.json(await n.criarSolicitacao(eu(c), await corpo(c)), 201));
+  api.route('/cliente', cli);
+
+  // ---------------------------------------------------------- download (cliente dono ou escritório)
+  api.get('/documentos/:id/arquivo', logado, async (c) => {
+    const d = await n.buscarDocumento(id(c.req.param('id')));
+    if (!auth.podeVerCliente(c.get('usuario'), d.cliente_id)) throw new n.ErroDeRegra('Documento não encontrado.', 404);
+    const dados = await arquivos().ler(d.arquivo);
+    if (!dados) throw new n.ErroDeRegra('Arquivo indisponível.', 404);
+    const nome = d.nome_original.replace(/[^\w.\- À-ú]/g, '_');
+    return c.body(dados, 200, {
+      'Content-Type': d.mime,
+      'Content-Disposition': `${c.req.query('ver') ? 'inline' : 'attachment'}; filename*=UTF-8''${encodeURIComponent(nome)}`,
+      'Cache-Control': 'private, no-store',
+    });
+  });
+
+  // ---------------------------------------------------------- escritório (gestor + equipe)
+  const esc = new Hono();
+  esc.use('*', logado, doEscritorio);
+  const quem = (c) => c.get('usuario').id;
+
+  esc.get('/painel', async (c) => c.json(await n.painel()));
+  esc.get('/site', async (c) => c.json(await n.relatorioSite(c.req.query('dias'))));
+
+  esc.get('/clientes', async (c) => c.json(await n.listarClientes({ busca: c.req.query('busca') || '', situacao: c.req.query('situacao') || 'todos' })));
+  esc.post('/clientes', async (c) => c.json(await auth.criarUsuario({ ...(await corpo(c)), papel: 'cliente' }, quem(c)), 201));
+  esc.get('/clientes/:id', async (c) => {
+    const cid = id(c.req.param('id'));
+    const [cliente, processos, cobrancas, documentos, solicitacoes] = await Promise.all([
+      n.exigirCliente(cid), n.listarProcessos({ clienteId: cid }), n.listarCobrancas({ clienteId: cid }),
+      n.listarDocumentos(cid), n.listarSolicitacoes({ clienteId: cid }),
+    ]);
+    return c.json({ cliente, processos, cobrancas, documentos, solicitacoes });
+  });
+  esc.patch('/clientes/:id', async (c) => c.json(await n.atualizarCliente(id(c.req.param('id')), await corpo(c), quem(c))));
+
+  esc.get('/processos', async (c) => c.json(await n.listarProcessos({ busca: c.req.query('busca') || '', status: c.req.query('status') || undefined })));
+  esc.post('/processos', async (c) => c.json(await n.criarProcesso(await corpo(c), quem(c)), 201));
+  esc.get('/processos/:id', async (c) => c.json(await n.buscarProcesso(id(c.req.param('id')))));
+  esc.patch('/processos/:id', async (c) => c.json(await n.atualizarProcesso(id(c.req.param('id')), await corpo(c), quem(c))));
+  esc.post('/processos/:id/andamentos', async (c) => {
+    const pid = id(c.req.param('id'));
+    const { inserido } = await n.registrarAndamento(pid, { ...(await corpo(c)), origem: 'manual' }, quem(c));
+    if (!inserido) throw new n.ErroDeRegra('Este andamento já está lançado.', 409);
+    return c.json(await n.buscarProcesso(pid), 201);
+  });
+  esc.patch('/andamentos/:id', async (c) => c.json(await n.editarAndamento(id(c.req.param('id')), await corpo(c), quem(c))));
+  esc.post('/processos/:id/sincronizar', async (c) => {
+    if (!datajud.datajudConfigurado()) throw new n.ErroDeRegra('Consulta automática desligada. Configure DATAJUD_API_KEY.', 503);
+    try {
+      return c.json(await datajud.sincronizarProcesso(id(c.req.param('id'))));
     } catch (e) {
       throw e instanceof n.ErroDeRegra ? e : new n.ErroDeRegra(`Não foi possível consultar o tribunal: ${e.message}`, 502);
     }
-  }));
-  esc.post('/processos/:id/explicar', r(async (req, res) => {
-    res.json({ texto: await ia.explicarAndamento(id(req.params.id), String(req.body?.descricao || '').slice(0, 4000), req.usuario) });
-  }));
+  });
+  esc.post('/processos/:id/explicar', async (c) =>
+    c.json({ texto: await ia.explicarAndamento(id(c.req.param('id')), String((await corpo(c)).descricao || '').slice(0, 4000), c.get('usuario')) }));
 
-  esc.get('/mensagens', (_req, res) => res.json(n.caixaDeEntrada()));
-  esc.get('/mensagens/:clienteId', r((req, res) => {
-    const cid = id(req.params.clienteId);
-    n.marcarLidas(cid, true);
-    res.json(n.listarConversa(cid));
-  }));
-  esc.post('/mensagens/:clienteId', r((req, res) => res.status(201).json(n.enviarMensagem(id(req.params.clienteId), req.usuario.id, req.body?.texto, true))));
-  esc.post('/mensagens/:clienteId/sugestao', r(async (req, res) => res.json({ texto: await ia.sugerirResposta(id(req.params.clienteId), req.usuario) })));
+  esc.get('/mensagens', async (c) => c.json(await n.caixaDeEntrada()));
+  esc.get('/mensagens/:clienteId', async (c) => {
+    const cid = id(c.req.param('clienteId'));
+    await n.marcarLidas(cid, true);
+    return c.json(await n.listarConversa(cid));
+  });
+  esc.post('/mensagens/:clienteId', async (c) =>
+    c.json(await n.enviarMensagem(id(c.req.param('clienteId')), quem(c), (await corpo(c)).texto, true), 201));
+  esc.post('/mensagens/:clienteId/sugestao', async (c) =>
+    c.json({ texto: await ia.sugerirResposta(id(c.req.param('clienteId')), c.get('usuario')) }));
 
-  esc.post('/clientes/:id/documentos', upload.single('arquivo'), r((req, res) => {
-    if (!req.file) throw new n.ErroDeRegra('Escolha um arquivo.');
-    const tipo = req.body?.tipo;
+  esc.post('/clientes/:id/documentos', async (c) => {
+    const cid = id(c.req.param('id'));
+    const r = await receberArquivo(c);
     try {
-      res.status(201).json(n.criarDocumento({
-        cliente_id: id(req.params.id), processo_id: req.body?.processo_id ? id(req.body.processo_id) : null, tipo,
-        titulo: String(req.body?.titulo || '').slice(0, 200), status: req.body?.status || 'disponivel',
-        arquivo: req.file.filename, nome_original: req.file.originalname.slice(0, 200), mime: req.file.mimetype, tamanho: req.file.size,
-      }, req.usuario.id));
+      return c.json(await n.criarDocumento({
+        cliente_id: cid, processo_id: r.form.processo_id ? id(r.form.processo_id) : null, tipo: r.form.tipo,
+        titulo: String(r.form.titulo || '').slice(0, 200), status: r.form.status || 'disponivel',
+        arquivo: r.arquivo, nome_original: r.nome_original, mime: r.mime, tamanho: r.tamanho,
+      }, quem(c)), 201);
     } catch (e) {
-      unlinkSync(req.file.path);
+      await arquivos().apagar(r.arquivo);
       throw e;
     }
-  }));
-  esc.patch('/documentos/:id', r((req, res) => res.json(n.alterarStatusDocumento(id(req.params.id), req.body?.status, req.usuario.id))));
+  });
+  esc.patch('/documentos/:id', async (c) => c.json(await n.alterarStatusDocumento(id(c.req.param('id')), (await corpo(c)).status, quem(c))));
 
-  esc.get('/cobrancas', (req, res) => res.json(n.listarCobrancas({ situacao: req.query.situacao || undefined })));
-  esc.post('/cobrancas', r((req, res) => res.status(201).json(n.criarCobrancas(req.body || {}, req.usuario.id))));
-  esc.patch('/cobrancas/:id', r((req, res) => res.json(n.alterarCobranca(id(req.params.id), req.body || {}, req.usuario.id))));
-  esc.get('/inadimplentes', (_req, res) => res.json(n.inadimplentes()));
+  esc.get('/cobrancas', async (c) => c.json(await n.listarCobrancas({ situacao: c.req.query('situacao') || undefined })));
+  esc.post('/cobrancas', async (c) => c.json(await n.criarCobrancas(await corpo(c), quem(c)), 201));
+  esc.patch('/cobrancas/:id', async (c) => c.json(await n.alterarCobranca(id(c.req.param('id')), await corpo(c), quem(c))));
+  esc.get('/inadimplentes', async (c) => c.json(await n.inadimplentes()));
 
-  esc.get('/solicitacoes', (req, res) => res.json(n.listarSolicitacoes({ status: req.query.status || undefined })));
-  esc.patch('/solicitacoes/:id', r((req, res) => res.json(n.responderSolicitacao(id(req.params.id), req.body || {}, req.usuario.id))));
+  esc.get('/solicitacoes', async (c) => c.json(await n.listarSolicitacoes({ status: c.req.query('status') || undefined })));
+  esc.patch('/solicitacoes/:id', async (c) => c.json(await n.responderSolicitacao(id(c.req.param('id')), await corpo(c), quem(c))));
 
-  esc.get('/equipe', (_req, res) => res.json(n.listarEquipe()));
+  esc.get('/equipe', async (c) => c.json(await n.listarEquipe()));
 
-  esc.post('/assistente', r(async (req, res) => {
-    const historico = Array.isArray(req.body?.historico) ? req.body.historico : [];
-    res.json({ texto: await ia.conversarComAssistente(req.usuario, historico) });
-  }));
+  esc.post('/assistente', async (c) => {
+    const b = await corpo(c);
+    return c.json({ texto: await ia.conversarComAssistente(c.get('usuario'), Array.isArray(b.historico) ? b.historico : []) });
+  });
 
-  // ------------------------------------------------------------ só o gestor
-  const gestor = express.Router();
-  esc.use('/gestor', auth.exigirGestor, gestor);
+  // Chaves de acesso do Claude (cada pessoa do escritório gerencia as suas).
+  esc.get('/chaves', async (c) => c.json(await auth.listarChaves(quem(c))));
+  esc.post('/chaves', async (c) => c.json({ chave: await auth.criarChave(c.get('usuario'), (await corpo(c)).nome) }, 201));
+  esc.delete('/chaves/:id', async (c) => { await auth.apagarChave(quem(c), id(c.req.param('id'))); return c.json({ ok: true }); });
 
-  gestor.post('/equipe', r((req, res) => res.status(201).json(auth.criarUsuario({ ...req.body, papel: 'equipe' }, req.usuario.id))));
-  gestor.post('/acesso/:id', r((req, res) => res.json(n.definirAtivo(id(req.params.id), Boolean(req.body?.ativo), req.usuario.id))));
-  gestor.post('/senha/:id', r((req, res) => {
-    auth.redefinirSenha(id(req.params.id), req.body?.nova, req.usuario.id);
-    res.json({ ok: true });
-  }));
-  gestor.get('/auditoria', (_req, res) => res.json(n.auditoriaRecente(200)));
-  gestor.post('/sincronizar', r(async (_req, res) => res.json(await datajud.sincronizarTodos())));
+  // Ferramentas do Claude pela internet: a extensão MCP chama por aqui, com chave de acesso.
+  esc.get('/ferramentas', (c) => c.json(ferramentas(quem(c)).map((f) => ({ nome: f.nome, descricao: f.descricao, escreve: Boolean(f.escreve) }))));
+  esc.post('/ferramentas/:nome', async (c) => {
+    const f = ferramentas(quem(c)).find((x) => x.nome === c.req.param('nome'));
+    if (!f) throw new n.ErroDeRegra('Ferramenta não encontrada.', 404);
+    const args = f.esquema.safeParse(await corpo(c));
+    if (!args.success) throw new n.ErroDeRegra(`Dados inválidos: ${args.error.issues.map((i) => i.path.join('.') + ' ' + i.message).join('; ')}`);
+    return c.json(await f.executar(args.data));
+  });
 
-  api.use((_req, _res, next) => next(new n.ErroDeRegra('Rota não encontrada.', 404)));
+  // ---------------------------------------------------------- só o gestor
+  const gestor = new Hono();
+  gestor.use('*', soGestor);
+  gestor.post('/equipe', async (c) => c.json(await auth.criarUsuario({ ...(await corpo(c)), papel: 'equipe' }, quem(c)), 201));
+  gestor.post('/acesso/:id', async (c) => c.json(await n.definirAtivo(id(c.req.param('id')), Boolean((await corpo(c)).ativo), quem(c))));
+  gestor.post('/senha/:id', async (c) => {
+    await auth.redefinirSenha(id(c.req.param('id')), (await corpo(c)).nova, quem(c));
+    return c.json({ ok: true });
+  });
+  gestor.get('/auditoria', async (c) => c.json(await n.auditoriaRecente(200)));
+  gestor.post('/sincronizar', async (c) => c.json(await datajud.sincronizarTodos()));
+  esc.route('/gestor', gestor);
 
-  // ------------------------------------------------------------ telas
-  app.use(express.static(resolve(raiz, 'public'), { index: 'index.html', maxAge: '1h' }));
-  app.get(/^\/(?!api\/).*/, (_req, res) => res.sendFile(resolve(raiz, 'public/index.html')));
+  api.route('/escritorio', esc);
+  api.all('*', () => { throw new n.ErroDeRegra('Rota não encontrada.', 404); });
+  app.route('/api', api);
 
-  // ------------------------------------------------------------ erros
-  // eslint-disable-next-line no-unused-vars
-  app.use((err, req, res, _next) => {
-    if (err instanceof multer.MulterError) {
-      return res.status(400).json({ erro: err.code === 'LIMIT_FILE_SIZE' ? 'Arquivo maior que 15 MB.' : 'Falha no envio do arquivo.' });
-    }
-    if (err instanceof n.ErroDeRegra) return res.status(err.status).json({ erro: err.message });
-    if (err?.type === 'entity.parse.failed') return res.status(400).json({ erro: 'Dados inválidos.' });
-    console.error(`[erro] ${req.method} ${req.path}:`, err);
-    res.status(500).json({ erro: 'Algo deu errado do nosso lado. Tente de novo em instantes.' });
+  // ---------------------------------------------------------- erros
+  app.onError((err, c) => {
+    if (err instanceof n.ErroDeRegra) return c.json({ erro: err.message }, err.status);
+    console.error(`[erro] ${c.req.method} ${c.req.path}:`, err);
+    return c.json({ erro: 'Algo deu errado do nosso lado. Tente de novo em instantes.' }, 500);
   });
 
   return app;

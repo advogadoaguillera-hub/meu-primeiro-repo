@@ -361,8 +361,12 @@ async function telaPerfil(c) {
         <button class="botao" type="submit">Trocar senha</button>
       </form>
     </div>
+    ${ehEscritorio() ? `<section class="cartao" id="chaves"><div class="cartao-titulo"><div><h3>Chaves do Claude</h3>
+      <p class="suave pequeno">Ligam o Claude Desktop ou o Claude Code a este sistema, para você gerenciar o escritório conversando com o Claude, usando a sua assinatura. Tudo o que ele fizer fica registrado em seu nome.</p></div>
+      <button class="botao pequeno" type="button" id="nova-chave">${icone('mais')} Nova chave</button></div><div id="lista-chaves"></div></section>` : ''}
     <div class="cartao"><div class="acoes"><button class="botao perigo" type="button" id="sair">Sair da conta</button>
       <span class="suave pequeno">Conta criada em ${dataBr(u.criado_em)}.</span></div></div>`;
+  if (ehEscritorio()) ligarChaves(c);
   aoEnviar($('#f-perfil', c), async (d) => {
     estado.usuario = { ...estado.usuario, ...(await api('PATCH', '/eu', d)).usuario };
     avisar('Dados salvos.');
@@ -378,6 +382,39 @@ async function telaPerfil(c) {
     try { sessionStorage.removeItem('aguillera-assistente'); } catch { /* sem armazenamento */ }
     estado.usuario = null;
     navegar('#/entrar');
+  });
+}
+
+// Chaves de acesso do Claude: a chave aparece uma única vez, na hora de criar.
+async function ligarChaves(c) {
+  const desenhar = async () => {
+    const lista = await api('GET', '/escritorio/chaves');
+    $('#lista-chaves', c).innerHTML = lista.length ? `<ul class="lista">${lista.map((k) => `<li data-chave="${k.id}"><div><div class="titulo">${e(k.nome)}</div>
+      <div class="meta">criada ${quando(k.criado_em)} · ${k.ultimo_uso ? `último uso ${quando(k.ultimo_uso)}` : 'nunca usada'}</div></div>
+      <button class="botao pequeno perigo" type="button" data-apagar>Apagar</button></li>`).join('')}</ul>` : '<p class="suave pequeno">Nenhuma chave criada.</p>';
+  };
+  await desenhar();
+  $('#nova-chave', c).addEventListener('click', () => abrirModal('Nova chave do Claude', `<form>
+      <div class="campo"><label>Onde vai usar</label><input name="nome" type="text" value="Claude Desktop" required maxlength="60"></div>
+      <button class="botao" type="submit">Criar chave</button></form>`, async (_f, d) => {
+    const { chave } = await api('POST', '/escritorio/chaves', d);
+    await desenhar();
+    setTimeout(() => abrirModal('Copie a sua chave agora', `<p>Ela aparece <strong>só desta vez</strong>. Guarde como guarda uma senha.</p>
+      <p class="pix" id="chave-nova">${e(chave)}</p>
+      <div class="acoes"><button class="botao ouro" type="button" id="copiar-chave">Copiar</button><button class="botao claro" type="button" data-fechar>Pronto</button></div>
+      <p class="suave pequeno">Endereço do sistema: <strong>${e(location.origin)}</strong>. O passo a passo para colar no Claude está no README do sistema.</p>`), 0);
+    setTimeout(() => $('#copiar-chave')?.addEventListener('click', async () => {
+      try { await navigator.clipboard.writeText(chave); avisar('Chave copiada.'); } catch { avisar('Selecione e copie a chave manualmente.', 'erro'); }
+    }), 0);
+  }));
+  c.addEventListener('click', async (ev) => {
+    if (!ev.target.closest('[data-apagar]')) return;
+    if (!confirm('Apagar esta chave? O Claude que a usa perde o acesso na hora.')) return;
+    try {
+      await api('DELETE', `/escritorio/chaves/${ev.target.closest('[data-chave]').dataset.chave}`);
+      avisar('Chave apagada.');
+      await desenhar();
+    } catch (err) { avisar(err.message, 'erro'); }
   });
 }
 

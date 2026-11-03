@@ -1,0 +1,51 @@
+// Configuração do Cloudflare Workers. Veja deploy/cloudflare/GUIA-CLOUDFLARE.md.
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "aguillera",
+  "main": "server/worker.js",
+  "compatibility_date": "2026-10-01",
+  "compatibility_flags": ["nodejs_compat"],
+
+  // Telas do aplicativo. A API (/api/...) passa pelo Worker; o resto é arquivo estático.
+  "assets": {
+    "directory": "./public",
+    "binding": "ASSETS",
+    "not_found_handling": "single-page-application",
+    "run_worker_first": ["/api/*"]
+  },
+
+  // Banco de dados (D1). O id é preenchido sozinho na publicação (deploy/cloudflare/publicar.sh).
+  "d1_databases": [
+    { "binding": "DB", "database_name": "aguillera", "database_id": "ID_PRODUCAO" }
+  ],
+
+  // Documentos dos clientes (R2).
+  "r2_buckets": [
+    { "binding": "ARQUIVOS", "bucket_name": "aguillera-arquivos" }
+  ],
+
+  // Consulta aos tribunais (DataJud) a cada 6 horas.
+  "triggers": { "crons": ["17 */6 * * *"] },
+
+  // DEMO=1 enche o sistema com dados fictícios (só na versão de teste).
+  "vars": { "DEMO": "0" },
+
+  "observability": { "enabled": true },
+
+  // Endereço oficial: descomente quando o domínio estiver no Cloudflare (passo 6 do guia).
+  // "routes": [{ "pattern": "area.aguillera.art.br", "custom_domain": true }],
+
+  // Versão de teste: banco e arquivos próprios, com dados fictícios.
+  // Fica em https://aguillera-teste.<sua-conta>.workers.dev
+  "env": {
+    "teste": {
+      "vars": { "DEMO": "1" },
+      "d1_databases": [
+        { "binding": "DB", "database_name": "aguillera-teste", "database_id": "ID_TESTE" }
+      ],
+      "r2_buckets": [
+        { "binding": "ARQUIVOS", "bucket_name": "aguillera-teste-arquivos" }
+      ]
+    }
+  }
+}

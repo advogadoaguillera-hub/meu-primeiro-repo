@@ -1,29 +1,20 @@
-// Ponto de partida do servidor: `npm start`.
+// Ponto de partida no Node: `npm start` (computador ou servidor comum).
 
 import { carregarEnv } from './env.js';
 carregarEnv();
 
-const { criarApp } = await import('./app.js');
-const { abrirBanco } = await import('./db.js');
-const { criarUsuario } = await import('./auth.js');
+const { montarNode, iniciarServidor } = await import('./node.js');
+const { garantirGestor } = await import('./inicio.js');
 const { sincronizarTodos, datajudConfigurado } = await import('./datajud.js');
 
-abrirBanco();
+const app = await montarNode(process.env);
 
-// Primeira execução: cria o gestor a partir do .env.
-const temGestor = abrirBanco().prepare("SELECT 1 FROM usuarios WHERE papel = 'gestor'").get();
-if (!temGestor) {
-  const { GESTOR_NOME, GESTOR_EMAIL, GESTOR_SENHA } = process.env;
-  if (GESTOR_EMAIL && GESTOR_SENHA) {
-    criarUsuario({ nome: GESTOR_NOME || 'Gestor', email: GESTOR_EMAIL, senha: GESTOR_SENHA, papel: 'gestor' });
-    console.log(`Gestor criado: ${GESTOR_EMAIL}. Troque a senha no primeiro acesso e apague GESTOR_SENHA do .env.`);
-  } else {
-    console.warn('Nenhum gestor cadastrado. Preencha GESTOR_EMAIL e GESTOR_SENHA no .env e reinicie.');
-  }
-}
+const gestor = await garantirGestor();
+if (gestor === 'criado') console.log(`Gestor criado: ${process.env.GESTOR_EMAIL}. Troque a senha no primeiro acesso e apague GESTOR_SENHA do .env.`);
+if (gestor === 'faltam-dados') console.warn('Nenhum gestor cadastrado. Preencha GESTOR_EMAIL e GESTOR_SENHA no .env e reinicie.');
 
 const porta = Number(process.env.PORT || 3000);
-criarApp().listen(porta, () => console.log(`Aguillera no ar: http://localhost:${porta}`));
+iniciarServidor(app, porta).once('listening', () => console.log(`Aguillera no ar: http://localhost:${porta}`));
 
 // Andamentos automáticos: consulta os tribunais a cada N horas (padrão 6).
 if (datajudConfigurado()) {
