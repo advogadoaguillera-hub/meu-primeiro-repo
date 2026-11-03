@@ -19,6 +19,10 @@ on:
         options: [teste, producao]
         default: teste
 
+# O robô só lê o código; nada mais.
+permissions:
+  contents: read
+
 concurrency:
   group: cloudflare-${{ github.event.inputs.ambiente || 'teste' }}
   cancel-in-progress: false

@@ -346,9 +346,17 @@ test('chave de acesso: o Claude opera pelas ferramentas, sem cookie e sem CSRF',
   assert.equal(minhas.length, 1);
   assert.ok(minhas[0].ultimo_uso, 'registra o último uso');
   assert.equal(minhas[0].token_hash, undefined, 'a chave nunca volta do servidor');
+  // A chave só abre as ferramentas: nada de mensagem a cliente, outras chaves, senhas ou acessos.
+  assert.equal((await comChave('GET', '/api/escritorio/painel')).status, 403);
+  assert.equal((await comChave('POST', '/api/escritorio/chaves', { nome: 'outra' })).status, 403, 'chave não cria chave');
+  assert.equal((await comChave('POST', `/api/escritorio/mensagens/${ids.maria}`, { texto: 'oi' })).status, 403, 'mensagem ao cliente só por uma pessoa');
+  assert.equal((await comChave('POST', `/api/escritorio/gestor/senha/${ids.maria}`, { nova: 'senha-nova-99' })).status, 403);
+  assert.equal((await comChave('PATCH', '/api/eu', { nome: 'X' })).status, 403);
+  assert.equal((await gestor('GET', '/api/escritorio/chaves')).dados.length, 1);
   await gestor('DELETE', `/api/escritorio/chaves/${minhas[0].id}`);
-  assert.equal((await comChave('GET', '/api/escritorio/painel')).status, 401);
+  assert.equal((await comChave('GET', '/api/escritorio/ferramentas')).status, 401);
 });
+
 
 test('datas seguem o fuso de Corumbá, não o do servidor', async () => {
   const { hoje, inicioDoDiaUtc } = await import('../server/nucleo.js');
@@ -400,4 +408,11 @@ test('telas: qualquer rota fora da API devolve o aplicativo', async () => {
   assert.equal(r.status, 200);
   assert.match(await r.text(), /<html/);
   assert.equal((await fetch(base + '/api/nao-existe')).status, 404);
+});
+
+// Fica por último: o servidor recusa sem ler o corpo e fecha a conexão.
+test('pedido JSON grande demais dá 413 com mensagem certa', async () => {
+  const r = await gestor('POST', '/api/escritorio/assistente', { historico: [{ papel: 'usuario', texto: 'x'.repeat(1_100_000) }] });
+  assert.equal(r.status, 413);
+  assert.equal(r.dados.erro, 'Pedido grande demais.');
 });

@@ -50,13 +50,15 @@ npx wrangler deploy "${ENV_ARGS[@]}"
 # Segredos (só os que estiverem preenchidos no GitHub). Ficam guardados no Cloudflare,
 # nunca no código.
 echo "▶ Segredos"
+# Arquivo temporário só legível por este usuário e apagado mesmo se algo falhar.
+SEGREDOS="$(umask 077; mktemp)"
+trap 'rm -f "$SEGREDOS"' EXIT
 node -e '
   const nomes = ["GESTOR_NOME", "GESTOR_EMAIL", "GESTOR_SENHA", "ANTHROPIC_API_KEY", "DATAJUD_API_KEY"];
   const s = Object.fromEntries(nomes.filter((n) => process.env[n]).map((n) => [n, process.env[n]]));
-  require("fs").writeFileSync("/tmp/segredos.json", JSON.stringify(s));
-  console.log("  " + (Object.keys(s).join(", ") || "nenhum"));'
-if [ "$(cat /tmp/segredos.json)" != "{}" ]; then
-  npx wrangler secret bulk /tmp/segredos.json "${ENV_ARGS[@]}"
+  require("fs").writeFileSync(process.argv[1], JSON.stringify(s));
+  console.log("  " + (Object.keys(s).join(", ") || "nenhum"));' "$SEGREDOS"
+if [ "$(cat "$SEGREDOS")" != "{}" ]; then
+  npx wrangler secret bulk "$SEGREDOS" "${ENV_ARGS[@]}"
 fi
-rm -f /tmp/segredos.json
 echo "✔ Publicado ($AMBIENTE)."

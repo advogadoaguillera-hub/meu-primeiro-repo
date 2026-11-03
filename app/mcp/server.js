@@ -53,5 +53,5 @@ for (const f of ferramentas(0)) {
 }
 
 await servidor.connect(new StdioServerTransport());
-const eu = await chamar('/equipe').then(() => 'conectado').catch((e) => `sem acesso (${e.message})`);
+const eu = await chamar('/ferramentas').then(() => 'conectado').catch((e) => `sem acesso (${e.message})`);
 console.error(`MCP Aguillera → ${URL_SISTEMA}: ${eu}.`);

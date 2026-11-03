@@ -125,12 +125,18 @@ export function criarApp({ ipDe = () => '', cookieSeguro = () => true } = {}) {
     if (!['GET', 'HEAD', 'OPTIONS'].includes(c.req.method) && !quem.porChave && c.req.header('X-Aguillera') !== '1') {
       throw new n.ErroDeRegra('Requisição recusada.', 403);
     }
+    // A chave do Claude só abre as ferramentas (com auditoria "claude"): não manda mensagem
+    // a cliente, não cria outras chaves, não mexe em senhas nem em acessos.
+    if (quem.porChave && !/^\/api\/escritorio\/ferramentas(\/[a-z_]+)?$/.test(c.req.path)) {
+      throw new n.ErroDeRegra('A chave do Claude só dá acesso às ferramentas do Claude.', 403);
+    }
     await next();
   });
   // Uploads aceitam até 20 MB; o resto, até 1 MB.
   api.use('*', async (c, next) => {
-    const limite = c.req.path.endsWith('/documentos') && c.req.method === 'POST' ? 20 * 1024 * 1024 : 1024 * 1024;
-    return bodyLimit({ maxSize: limite, onError: () => { throw new n.ErroDeRegra('Arquivo maior que 15 MB.', 413); } })(c, next);
+    const upload = c.req.path.endsWith('/documentos') && c.req.method === 'POST';
+    const msg = upload ? 'Arquivo maior que 15 MB.' : 'Pedido grande demais.';
+    return bodyLimit({ maxSize: upload ? 20 * 1024 * 1024 : 1024 * 1024, onError: () => { throw new n.ErroDeRegra(msg, 413); } })(c, next);
   });
 
   const exigir = (teste, msg, status) => async (c, next) => {
