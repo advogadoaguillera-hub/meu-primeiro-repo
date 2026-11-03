@@ -11,6 +11,7 @@
 > | **Direito Previdenciário** | [`previdenciario/`](previdenciario/) | INSS, aposentadorias, BPC/LOAS, segurado especial rural, revisões |
 > | **Direito Tributário** | [`tributario/`](tributario/) | Execução fiscal, autos de infração, agro e patrimônio, reforma tributária |
 > | **Direito Empresarial** | [`empresarial/`](empresarial/) | Sociedades, contratos, conflitos societários, crise, holding |
+> | **Aplicativo do escritório** | [`app/`](app/) | Portal do cliente, gestão interna e extensão do Claude — ver [`app/README.md`](app/README.md) |
 >
 > O portal, a raiz e as áreas de imóvel urbano, previdenciário, tributário e
 > empresarial compartilham `config.js`, `css/style.css` e `js/main.js`. O site
