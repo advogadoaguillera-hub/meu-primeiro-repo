@@ -72,6 +72,8 @@ npm start
 Na primeira execução o gestor é criado com os dados do `.env`. Entre, troque a senha em
 *Minha conta* e apague `GESTOR_SENHA` do `.env`.
 
+**Passo a passo pronto para o Google Cloud** (servidor gratuito, um comando instala tudo, backup diário e HTTPS automático): [`deploy/servidor/GUIA-GOOGLE-CLOUD.md`](deploy/servidor/GUIA-GOOGLE-CLOUD.md).
+
 **Hospedagem** — qualquer serviço que rode Node.js com disco persistente: Railway, Render,
 Fly.io ou um servidor próprio (VPS) com Caddy para o HTTPS. Exigências:
 
